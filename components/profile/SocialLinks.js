@@ -1,9 +1,11 @@
-export default function SocialLinks({ links }) {
+import React from "react";
+
+export default function SocialLinks({ links = {} }) {
   return (
-    <div className="mt-6">
+    <div className="social-links">
       <h3 className="text-sm font-semibold text-gray-600 mb-2">Connect</h3>
       <div className="flex gap-4">
-        {links.twitter && (
+        {links?.twitter && (
           <a
             href={links.twitter}
             target="_blank"
@@ -13,7 +15,7 @@ export default function SocialLinks({ links }) {
             Twitter
           </a>
         )}
-        {links.instagram && (
+        {links?.instagram && (
           <a
             href={links.instagram}
             target="_blank"
@@ -23,14 +25,7 @@ export default function SocialLinks({ links }) {
             Instagram
           </a>
         )}
-        {links.email && (
-          <a
-            href={`mailto:${links.email}`}
-            className="text-gray-600 hover:text-blue-500"
-          >
-            Email
-          </a>
-        )}
+        {/* Add other social links as needed */}
       </div>
     </div>
   );
