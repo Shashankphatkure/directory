@@ -30,7 +30,7 @@ export default function WalletPage() {
               <h2 className="text-xl font-semibold">Manage</h2>
               <div className="space-y-3">
                 <button className="w-full px-4 py-3 bg-white border rounded-lg hover:bg-gray-50 text-left font-medium">
-                  Add Balance
+                  Add More Balance
                 </button>
                 <button className="w-full px-4 py-3 bg-white border rounded-lg hover:bg-gray-50 text-left font-medium">
                   View Transactions
