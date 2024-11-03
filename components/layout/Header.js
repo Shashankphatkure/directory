@@ -7,6 +7,9 @@ import {
   HomeIcon,
   ShoppingBagIcon,
   PlusCircleIcon,
+  NewspaperIcon,
+  BellIcon,
+  WalletIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Header() {
@@ -29,7 +32,7 @@ export default function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
               className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
@@ -45,6 +48,13 @@ export default function Header() {
               <span className="font-medium">Marketplace</span>
             </Link>
             <Link
+              href="/feed"
+              className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
+            >
+              <NewspaperIcon className="h-5 w-5" />
+              <span className="font-medium">Feed</span>
+            </Link>
+            <Link
               href="/sell"
               className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
             >
@@ -52,11 +62,25 @@ export default function Header() {
               <span className="font-medium">Sell</span>
             </Link>
             <Link
+              href="/wallet"
+              className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
+            >
+              <WalletIcon className="h-5 w-5" />
+              <span className="font-medium">Wallet</span>
+            </Link>
+            <Link
               href="/cart"
               className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
             >
               <ShoppingCartIcon className="h-5 w-5" />
               <span className="font-medium">Cart</span>
+            </Link>
+            <Link
+              href="/notifications"
+              className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
+            >
+              <BellIcon className="h-5 w-5" />
+              <span className="font-medium">Notifications</span>
             </Link>
             <Link
               href="/profile"

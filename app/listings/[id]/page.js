@@ -1,231 +1,272 @@
 "use client";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import {
-  ChatBubbleLeftIcon,
   HeartIcon,
   ShareIcon,
+  ShieldCheckIcon,
+  StarIcon,
+  ChatBubbleLeftIcon,
+  TruckIcon,
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 
 export default function ListingPage({ params }) {
-  const [showMakeOffer, setShowMakeOffer] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
-  // Mock data - replace with real data fetch
+  // Mock listing data
   const listing = {
     id: params.id,
-    title: "2024 PCGS MS-70 First Strike ASE",
-    price: 45.0,
-    shippingPrice: 5.0,
-    available: 12,
-    description:
-      "You know it... you've seen it... you know I got it.\nAmerican Silver Eagle 2024 MS-40 First Strike PCGS Graded Coin.\nPerfect for adding to your collection or for stacking.",
+    title: "1oz Gold American Eagle 2024",
+    price: 1950.0,
+    shipping: 15.0,
+    condition: "Brand New",
+    certification: "NGC MS70",
     seller: {
-      username: "Slabz4Dayz",
-      avatar: "https://ui-avatars.com/api/?name=Slabz4Dayz",
-      reputation: 665,
+      name: "GoldExpert",
+      rating: 4.9,
+      sales: 1234,
       verified: true,
-      avgShipping: "1 Day",
-      ordersFulfilled: 400,
+      joinDate: "Member since 2020",
+    },
+    description:
+      "2024 American Gold Eagle 1 oz $50 NGC MS70 Early Releases. Perfect condition, straight from the mint. Includes original packaging and certification.",
+    specifications: {
+      weight: "1 oz (31.1g)",
+      purity: ".9999 fine gold",
+      diameter: "32.7mm",
+      thickness: "2.87mm",
+      mint: "U.S. Mint",
+      year: "2024",
     },
     images: [
       "https://images.unsplash.com/photo-1610375461246-83df859d849d",
+      "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
       "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-      // Add more images...
     ],
-    specifications: {
-      category: "Graded Coins",
-      weight: "1 Troy Ounce",
-      shape: "Round",
-      mint: "United States Mint",
-    },
-    comments: [
-      {
-        id: 1,
-        user: {
-          username: "ThatSilverGuy",
-          avatar: "https://ui-avatars.com/api/?name=ThatSilverGuy",
-          reputation: 338,
-        },
-        content:
-          "Hey man, I see you are selling these for $45, but I see them on eBay for $40 plus ship. Do you think we could work out a deal?",
-        timestamp: "2h ago",
-      },
+    likes: 156,
+    views: 789,
+    location: "New York, USA",
+    shippingOptions: [
+      { method: "Standard Shipping", price: 15.0, time: "3-5 business days" },
+      { method: "Express Shipping", price: 25.0, time: "1-2 business days" },
+    ],
+    similarItems: [
       {
         id: 2,
-        user: {
-          username: "MAGAMan",
-          avatar: "https://ui-avatars.com/api/?name=MAGAMan",
-          reputation: 167,
-        },
-        content: "These are really nice coins. Good luck with sales!",
-        timestamp: "1h ago",
+        title: "1oz Gold Buffalo 2024",
+        price: 1975.0,
+        image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
       },
+      // Add more similar items...
     ],
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        {/* Back Button */}
-        <Link
-          href="/profile"
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Go Back To Profile
-        </Link>
+    <div className="container mx-auto px-4 py-8">
+      {/* Back Button */}
+      <Link
+        href="/marketplace"
+        className="inline-flex items-center text-[#C0C0C0] hover:text-[#4169E1] mb-6 transition-colors"
+      >
+        <ArrowLeftIcon className="h-5 w-5 mr-2" />
+        Back to Marketplace
+      </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Images */}
-          <div>
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              {/* Main Image */}
-              <div className="relative aspect-square mb-4">
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Image Gallery */}
+        <div className="space-y-4">
+          <div className="relative aspect-square rounded-xl overflow-hidden">
+            <Image
+              src={listing.images[selectedImage]}
+              alt={listing.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            {listing.images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedImage(index)}
+                className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                  selectedImage === index
+                    ? "border-[#4169E1]"
+                    : "border-transparent"
+                }`}
+              >
                 <Image
-                  src={listing.images[0]}
-                  alt={listing.title}
+                  src={image}
+                  alt={`Product image ${index + 1}`}
                   fill
-                  className="object-cover rounded-lg"
+                  className="object-cover"
                 />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-[#C0C0C0] mb-2">
+              {listing.title}
+            </h1>
+            <div className="flex items-center gap-4 text-[#C0C0C0]/60">
+              <span>Condition: {listing.condition}</span>
+              <span>•</span>
+              <span>{listing.certification}</span>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="card p-6">
+            <div className="flex justify-between items-baseline mb-4">
+              <div className="text-3xl font-bold text-[#50C878]">
+                ${listing.price.toFixed(2)}
               </div>
-              {/* Thumbnail Grid */}
-              <div className="grid grid-cols-5 gap-2">
-                {listing.images.map((image, index) => (
-                  <div key={index} className="relative aspect-square">
-                    <Image
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover rounded-lg cursor-pointer hover:opacity-75"
-                    />
-                  </div>
-                ))}
+              <div className="text-[#C0C0C0]/60">
+                + ${listing.shipping.toFixed(2)} shipping
               </div>
             </div>
+            <button className="w-full bg-[#4169E1] text-white py-3 rounded-lg hover:bg-[#4169E1]/80 transition-colors mb-3">
+              Add to Cart
+            </button>
+            <button className="w-full border border-[#C0C0C0]/20 text-[#C0C0C0] py-3 rounded-lg hover:bg-[#333333] transition-colors">
+              Make Offer
+            </button>
+          </div>
 
-            {/* Specifications */}
-            <div className="mt-6 grid grid-cols-4 gap-4">
+          {/* Seller Info */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-[#C0C0C0] font-semibold">
+                  {listing.seller.name}
+                </h3>
+                {listing.seller.verified && (
+                  <ShieldCheckIcon className="h-5 w-5 text-[#50C878]" />
+                )}
+              </div>
+              <Link
+                href={`/profile/${listing.seller.name}`}
+                className="text-[#4169E1] hover:text-[#4169E1]/80"
+              >
+                View Profile
+              </Link>
+            </div>
+            <div className="flex items-center gap-4 text-[#C0C0C0]/60 text-sm">
+              <div className="flex items-center">
+                <StarIcon className="h-4 w-4 text-[#FFD700] mr-1" />
+                {listing.seller.rating} Rating
+              </div>
+              <span>•</span>
+              <div>{listing.seller.sales} Sales</div>
+              <span>•</span>
+              <div>{listing.seller.joinDate}</div>
+            </div>
+          </div>
+
+          {/* Specifications */}
+          <div className="card p-6">
+            <h3 className="text-[#FFD700] font-semibold mb-4">
+              Specifications
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-[#C0C0C0]/80">
               {Object.entries(listing.specifications).map(([key, value]) => (
-                <div key={key} className="text-center">
-                  <div className="text-3xl mb-2">
-                    {key === "category" && "📑"}
-                    {key === "weight" && "⚖️"}
-                    {key === "shape" && "⭕"}
-                    {key === "mint" && "🏛️"}
-                  </div>
-                  <div className="text-sm font-medium">{value}</div>
-                  <div className="text-xs text-gray-500 capitalize">{key}</div>
+                <div key={key}>
+                  <span className="text-[#C0C0C0] capitalize">{key}: </span>
+                  {value}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right Column - Details */}
-          <div>
-            {/* Seller Info */}
-            <div className="flex items-center gap-4 mb-6">
-              <Image
-                src={listing.seller.avatar}
-                alt={listing.seller.username}
-                width={48}
-                height={48}
-                className="rounded-full"
-              />
-              <div>
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  {listing.seller.username}
-                  {listing.seller.verified && (
-                    <span className="text-blue-500">✓</span>
-                  )}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {listing.seller.reputation} Rep
-                </p>
-              </div>
-            </div>
-
-            {/* Listing Details */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h1 className="text-2xl font-bold mb-2">{listing.title}</h1>
-              <div className="flex items-baseline mb-4">
-                <span className="text-3xl font-bold">${listing.price}</span>
-                <span className="text-gray-500 ml-2">
-                  + ${listing.shippingPrice} Shipping
-                </span>
-              </div>
-              <p className="text-gray-600 mb-6">{listing.description}</p>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
-                  Buy It Now
-                </button>
-                <button
-                  onClick={() => setShowMakeOffer(true)}
-                  className="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-lg hover:bg-blue-50"
+          {/* Shipping */}
+          <div className="card p-6">
+            <h3 className="text-[#FFD700] font-semibold mb-4">
+              Shipping Options
+            </h3>
+            <div className="space-y-3">
+              {listing.shippingOptions.map((option, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between text-[#C0C0C0]/80"
                 >
-                  Make A Offer
-                </button>
-                <button className="w-full bg-white border text-gray-700 py-3 rounded-lg hover:bg-gray-50">
-                  Follow Seller
-                </button>
-              </div>
-
-              {/* Social Interactions */}
-              <div className="flex justify-between mt-6 pt-6 border-t">
-                <div className="flex space-x-4">
-                  <button className="flex items-center space-x-1 text-gray-500 hover:text-blue-600">
-                    <ChatBubbleLeftIcon className="h-5 w-5" />
-                    <span>Comment</span>
-                  </button>
-                  <button className="flex items-center space-x-1 text-gray-500 hover:text-blue-600">
-                    <HeartIcon className="h-5 w-5" />
-                    <span>Like</span>
-                  </button>
-                </div>
-                <button className="text-gray-500 hover:text-blue-600">
-                  <ShareIcon className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Comments Section */}
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Comments</h3>
-              <div className="space-y-4">
-                {listing.comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="bg-white rounded-lg shadow-sm p-4"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <Image
-                        src={comment.user.avatar}
-                        alt={comment.user.username}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                      <div>
-                        <span className="font-medium">
-                          {comment.user.username}
-                        </span>
-                        <span className="text-sm text-gray-500 ml-2">
-                          {comment.user.reputation} Rep
-                        </span>
+                  <div className="flex items-center gap-2">
+                    <TruckIcon className="h-5 w-5" />
+                    <div>
+                      <div>{option.method}</div>
+                      <div className="text-sm text-[#C0C0C0]/60">
+                        {option.time}
                       </div>
                     </div>
-                    <p className="text-gray-700">{comment.content}</p>
-                    <div className="text-sm text-gray-500 mt-2">
-                      {comment.timestamp}
-                    </div>
                   </div>
-                ))}
-              </div>
+                  <div className="text-[#50C878]">
+                    ${option.price.toFixed(2)}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Social Actions */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsLiked(!isLiked)}
+                className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors"
+              >
+                {isLiked ? (
+                  <HeartSolidIcon className="h-6 w-6 text-red-500" />
+                ) : (
+                  <HeartIcon className="h-6 w-6" />
+                )}
+                <span>{listing.likes}</span>
+              </button>
+              <button className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors">
+                <ChatBubbleLeftIcon className="h-6 w-6" />
+                <span>Message</span>
+              </button>
+            </div>
+            <button className="text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors">
+              <ShareIcon className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Similar Items */}
+      <div className="mt-12">
+        <h2 className="text-xl font-bold text-[#FFD700] mb-6">Similar Items</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {listing.similarItems.map((item) => (
+            <Link
+              key={item.id}
+              href={`/listings/${item.id}`}
+              className="card overflow-hidden hover:shadow-xl transition-all duration-300"
+            >
+              <div className="relative aspect-square">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-[#C0C0C0] font-medium mb-2">
+                  {item.title}
+                </h3>
+                <div className="text-[#50C878] font-bold">
+                  ${item.price.toFixed(2)}
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
