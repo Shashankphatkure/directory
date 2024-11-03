@@ -3,19 +3,34 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #333333;
+  --foreground: #c0c0c0;
+  --accent: #4169e1;
+  --highlight: #ffd700;
+  --success: #50c878;
+  --surface: #2a2a2a;
+  --border: rgba(192, 192, 192, 0.2);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom utility classes */
+.btn-primary {
+  @apply bg-[#4169E1] text-white hover:bg-[#4169E1]/80 transition-colors;
+}
+
+.btn-success {
+  @apply bg-[#50C878] text-white hover:bg-[#50C878]/80 transition-colors;
+}
+
+.card {
+  @apply bg-[#2A2A2A] border border-[#C0C0C0]/20 rounded-xl shadow-lg;
+}
+
+.heading {
+  @apply text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4;
 }

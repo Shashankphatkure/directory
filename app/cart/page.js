@@ -47,19 +47,25 @@ export default function CartPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Shopping Cart</h1>
-        <span className="text-sm text-gray-600">Send Us Your Feedback!</span>
+        <h1 className="text-3xl font-bold text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
+          Shopping Cart
+        </h1>
+        <span className="text-sm text-[#C0C0C0]/60">
+          Send Us Your Feedback!
+        </span>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items */}
         <div className="lg:w-2/3">
-          <CartItems />
+          <div className="card p-6">
+            <CartItems />
+          </div>
         </div>
 
         {/* Cart Summary */}
         <div className="lg:w-1/3">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="card p-6">
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span>Items (2)</span>
@@ -69,20 +75,20 @@ export default function CartPage() {
                 <span>Shipping to 28704</span>
                 <span>$10.00</span>
               </div>
-              <div className="pt-4 border-t flex justify-between font-semibold">
+              <div className="pt-4 border-t border-[#C0C0C0]/20 flex justify-between font-semibold">
                 <span>Subtotal</span>
-                <span>$210.00</span>
+                <span className="text-[#50C878]">$210.00</span>
               </div>
             </div>
 
             <button
-              className="w-full mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full mt-6 px-6 py-3 bg-[#4169E1] text-white rounded-lg hover:bg-[#4169E1]/80 transition-colors"
               onClick={() => router.push("/checkout")}
             >
               Go to Checkout
             </button>
 
-            <div className="mt-4 text-center text-sm text-gray-500">
+            <div className="mt-4 text-center text-sm text-[#C0C0C0]/60">
               <span>✓ Purchase protected by PeerMetals.com</span>
             </div>
           </div>
@@ -91,10 +97,12 @@ export default function CartPage() {
 
       {/* Explore More Items */}
       <div className="mt-12">
-        <h2 className="text-xl font-bold mb-6">Explore More Items</h2>
+        <h2 className="text-xl font-bold mb-6 text-[#FFD700]">
+          Explore More Items
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {similarItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-sm p-4">
+            <div key={item.id} className="card p-4">
               <div className="aspect-square relative rounded-lg overflow-hidden mb-4">
                 <Image
                   src={item.image}
@@ -105,13 +113,14 @@ export default function CartPage() {
                 />
               </div>
               <div className="space-y-2">
-                <h3 className="font-medium">{item.title}</h3>
+                <h3 className="font-medium text-[#C0C0C0]">{item.title}</h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">${item.price.toFixed(2)}</span>
+                  <span className="text-sm text-[#50C878]">
+                    ${item.price.toFixed(2)}
+                  </span>
                   <button
-                    className="px-4 py-1 text-sm border rounded hover:bg-gray-50"
+                    className="px-4 py-1 text-sm border border-[#C0C0C0]/20 rounded hover:bg-[#4169E1] hover:text-white transition-all duration-300"
                     onClick={() => {
-                      // Add to cart logic here
                       console.log("Adding to cart:", item);
                     }}
                   >

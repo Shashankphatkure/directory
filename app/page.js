@@ -123,9 +123,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#333333]">
       {/* Hero Carousel */}
-      <div className="relative aspect-[21/9] bg-gray-200">
+      <div className="relative aspect-[21/9] bg-[#C0C0C0]">
         <div className="absolute inset-0">
           <Image
             src={carouselSlides[activeSlide].image}
@@ -133,18 +133,18 @@ export default function Home() {
             fill
             className="object-cover transition-opacity duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#333333]/70 to-transparent">
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="max-w-xl text-white">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                   {carouselSlides[activeSlide].title}
                 </h1>
-                <p className="text-xl mb-8">
+                <p className="text-xl mb-8 text-[#C0C0C0]">
                   {carouselSlides[activeSlide].description}
                 </p>
                 <Link
                   href={carouselSlides[activeSlide].link}
-                  className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                  className="inline-block bg-[#4169E1] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#4169E1]/80 transition-colors"
                 >
                   Explore Now
                 </Link>
@@ -184,16 +184,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
         {/* Categories */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Browse Categories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
+            Browse Categories
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/marketplace?category=${category.name.toLowerCase()}`}
-                className="group relative overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-[#2A2A2A] border border-[#C0C0C0]/20"
               >
                 <div className="aspect-[4/3] relative">
                   <Image
@@ -202,15 +204,15 @@ export default function Home() {
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#333333] via-[#333333]/60 to-transparent">
                     <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-white font-semibold text-lg mb-1">
+                      <h3 className="text-[#FFD700] font-semibold text-lg mb-1">
                         {category.name}
                       </h3>
-                      <p className="text-white/80 text-sm mb-2">
+                      <p className="text-[#C0C0C0] text-sm mb-2">
                         {category.description}
                       </p>
-                      <span className="text-white/60 text-sm">
+                      <span className="text-[#C0C0C0]/60 text-sm">
                         {category.count} items
                       </span>
                     </div>
@@ -222,22 +224,24 @@ export default function Home() {
         </div>
 
         {/* Featured Listings */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Featured Listings</h2>
+        <div className="mb-16">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
+              Featured Listings
+            </h2>
             <Link
               href="/marketplace"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[#4169E1] hover:text-[#4169E1]/80 font-medium"
             >
               View All
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredItems.map((item) => (
               <Link
                 key={item.id}
                 href={`/listings/${item.id}`}
-                className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-[#2A2A2A] rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-[#C0C0C0]/20"
               >
                 <div className="relative aspect-square">
                   <Image
@@ -246,15 +250,23 @@ export default function Home() {
                     fill
                     className="object-cover"
                   />
+                  <div className="absolute top-2 right-2 bg-[#50C878] text-white text-xs px-2 py-1 rounded-full">
+                    Featured
+                  </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Sold By: {item.seller} • {item.rep} Rep
+                  <h3 className="font-semibold mb-1 text-[#C0C0C0]">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-[#C0C0C0]/80 mb-2">
+                    Sold By: {item.seller} •
+                    <span className="text-[#FFD700]"> {item.rep} Rep</span>
                   </p>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-lg font-bold">${item.price}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-lg font-bold text-[#50C878]">
+                      ${item.price}
+                    </span>
+                    <span className="text-sm text-[#C0C0C0]/60">
                       +${item.shipping} shipping
                     </span>
                   </div>
@@ -266,24 +278,28 @@ export default function Home() {
 
         {/* Market Updates and News */}
         <div>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Latest Updates</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
+              Latest Updates
+            </h2>
             <Link
               href="/feed"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[#4169E1] hover:text-[#4169E1]/80 font-medium"
             >
               View Feed
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Market Updates */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold mb-4">Market Updates</h3>
-              <div className="space-y-4">
+            <div className="bg-[#2A2A2A] rounded-xl shadow-lg p-6 border border-[#C0C0C0]/20">
+              <h3 className="font-semibold mb-6 text-[#FFD700]">
+                Market Updates
+              </h3>
+              <div className="space-y-6">
                 {newsItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex gap-4 pb-4 border-b last:border-0"
+                    className="flex gap-4 pb-4 border-b border-[#C0C0C0]/20 last:border-0"
                   >
                     <div className="relative w-24 h-24 flex-shrink-0">
                       <Image
@@ -294,11 +310,13 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <h4 className="font-medium mb-1">{item.title}</h4>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <h4 className="font-medium mb-1 text-[#C0C0C0]">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-[#C0C0C0]/80 mb-2">
                         {item.content}
                       </p>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-[#C0C0C0]/60">
                         {item.timestamp} • by {item.author}
                       </div>
                     </div>
@@ -308,8 +326,10 @@ export default function Home() {
             </div>
 
             {/* Community Activity */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold mb-4">Community Activity</h3>
+            <div className="bg-[#2A2A2A] rounded-xl shadow-lg p-6 border border-[#C0C0C0]/20">
+              <h3 className="font-semibold mb-6 text-[#FFD700]">
+                Community Activity
+              </h3>
               <div className="space-y-4">
                 {/* Add community feed items here */}
               </div>

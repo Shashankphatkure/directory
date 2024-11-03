@@ -1,108 +1,57 @@
 export default function FAQPage() {
   const faqs = [
     {
-      question: "How does PeerMetals ensure authenticity?",
+      question: "How does PeerMetals ensure transaction security?",
       answer:
-        "We employ a rigorous verification process including expert authentication, detailed imaging requirements, and secure escrow services to ensure all items traded on our platform are genuine.",
+        "We implement bank-level security measures, including secure payment processing, identity verification, and escrow services for all transactions.",
     },
     {
       question: "What payment methods are accepted?",
       answer:
-        "We accept major credit cards, bank transfers, and select cryptocurrency payments. All transactions are secured through our platform's escrow service.",
+        "We accept major credit cards, bank transfers, and select cryptocurrencies. All payments are processed through secure, verified channels.",
     },
     {
-      question: "How does shipping work?",
+      question: "How is shipping handled?",
       answer:
-        "Sellers can choose their preferred shipping carrier. All items must be fully insured and require signature confirmation. We integrate with major shipping providers for seamless label creation and tracking.",
+        "Sellers are required to use insured shipping methods. All items are tracked and require signature confirmation upon delivery.",
     },
     {
-      question: "What are the fees for selling?",
+      question: "What are the seller fees?",
       answer:
-        "Our platform charges a competitive fee of 5% on successful sales. This includes payment processing and basic listing features. Premium features may incur additional fees.",
-    },
-    {
-      question: "How does the escrow service work?",
-      answer:
-        "When a purchase is made, funds are held in escrow until the buyer confirms receipt and authenticity of the item. This protects both buyers and sellers throughout the transaction.",
-    },
-    {
-      question: "What if I receive an item that's not as described?",
-      answer:
-        "Our buyer protection program covers items that significantly differ from their listing description. Contact support within 3 days of receipt to initiate a return or refund process.",
+        "Our platform charges a competitive 2.5% fee on successful sales. There are no listing fees or monthly charges.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-xl text-blue-100">
-            Find answers to common questions about PeerMetals
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
+        Frequently Asked Questions
+      </h1>
+
+      <div className="grid gap-6">
+        {faqs.map((faq, index) => (
+          <div key={index} className="card p-6">
+            <h3 className="text-xl font-semibold mb-3 text-[#FFD700]">
+              {faq.question}
+            </h3>
+            <p className="text-[#C0C0C0]/80">{faq.answer}</p>
+          </div>
+        ))}
       </div>
 
-      {/* FAQ Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-3xl mx-auto">
-          {/* Search Bar */}
-          <div className="mb-12">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder="Search FAQ..."
-                className="w-full px-4 py-3 pl-12 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <svg
-                className="absolute left-4 top-3.5 h-5 w-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
-
-          {/* FAQ Items */}
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {faq.question}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Still Have Questions */}
-          <div className="mt-12 text-center">
-            <h2 className="text-2xl font-bold mb-4">Still Have Questions?</h2>
-            <p className="text-gray-600 mb-6">
-              Can't find the answer you're looking for? Please contact our
-              support team.
-            </p>
-            <a
-              href="/contact"
-              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Contact Support
-            </a>
-          </div>
-        </div>
+      <div className="mt-12 card p-6">
+        <h2 className="text-xl font-semibold mb-4 text-[#FFD700]">
+          Still Have Questions?
+        </h2>
+        <p className="text-[#C0C0C0]/80 mb-4">
+          Our support team is here to help you with any questions or concerns.
+        </p>
+        <a
+          href="/contact"
+          className="inline-block bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors"
+        >
+          Contact Support
+        </a>
       </div>
     </div>
   );

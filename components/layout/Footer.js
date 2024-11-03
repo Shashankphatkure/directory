@@ -44,54 +44,41 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-white border-t">
+    <footer className="bg-[#2A2A2A] border-t border-[#C0C0C0]/20">
       <div className="container mx-auto px-4 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-[#FFD700] to-[#C0C0C0] bg-clip-text text-transparent">
                 PeerMetals
               </span>
             </Link>
-            <p className="mt-4 text-gray-600 max-w-sm">
+            <p className="mt-4 text-[#C0C0C0]/80 max-w-sm">
               The trusted marketplace for precious metals enthusiasts. Buy,
               sell, and connect with fellow collectors in a secure environment.
             </p>
             {/* Social Links */}
             <div className="flex space-x-4 mt-6">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-blue-500 transition-colors"
-              >
-                <FaTwitter size={24} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-blue-500 transition-colors"
-              >
-                <FaFacebook size={24} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-blue-500 transition-colors"
-              >
-                <FaInstagram size={24} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-blue-500 transition-colors"
-              >
-                <FaLinkedin size={24} />
-              </a>
+              {[FaTwitter, FaFacebook, FaInstagram, FaLinkedin].map(
+                (Icon, index) => (
+                  <a
+                    key={index}
+                    href="#"
+                    className="text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors"
+                  >
+                    <Icon size={24} />
+                  </a>
+                )
+              )}
             </div>
           </div>
 
           {/* Quick Links Sections */}
           {sections.map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-[#FFD700] mb-4">
                 {section.title}
               </h3>
               <ul className="space-y-3">
@@ -99,7 +86,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                      className="text-[#C0C0C0]/80 hover:text-[#4169E1] transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -111,13 +98,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t">
+        <div className="mt-12 pt-8 border-t border-[#C0C0C0]/20">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm">
+            <p className="text-[#C0C0C0]/60 text-sm">
               © {currentYear} PeerMetals. All rights reserved.
             </p>
             <div className="mt-4 md:mt-0">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors">
                 Get Started
               </button>
             </div>
