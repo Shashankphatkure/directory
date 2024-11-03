@@ -102,23 +102,85 @@ export default function Home() {
     },
   ];
 
-  // Mock news items
-  const newsItems = [
+  // Enhanced market updates
+  const marketUpdates = [
     {
       id: 1,
-      title: "Market Update: Gold Reaches New High",
-      content: "Gold prices continue to surge as demand increases...",
+      title: "Gold Surges to New All-Time High",
+      content:
+        "Gold prices break $2,100/oz amid global economic uncertainty...",
       timestamp: "2h ago",
-      author: "Market Analyst",
+      author: "Sarah Johnson",
+      authorRole: "Senior Market Analyst",
       image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
+      change: "+2.5%",
+      trend: "up",
     },
     {
       id: 2,
-      title: "Silver Shortage Concerns",
-      content: "Industry experts discuss potential silver supply issues...",
+      title: "Silver Industrial Demand Soars",
+      content: "Growing EV and solar panel production drives silver demand...",
       timestamp: "4h ago",
-      author: "Industry Expert",
-      image: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356",
+      author: "Michael Chen",
+      authorRole: "Industry Expert",
+      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
+      change: "+1.8%",
+      trend: "up",
+    },
+    {
+      id: 3,
+      title: "Platinum Market Analysis",
+      content:
+        "Supply constraints could lead to higher platinum prices in 2024...",
+      timestamp: "6h ago",
+      author: "David Williams",
+      authorRole: "Precious Metals Strategist",
+      image: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
+      change: "+0.9%",
+      trend: "up",
+    },
+  ];
+
+  // Enhanced community activity
+  const communityActivity = [
+    {
+      id: 1,
+      type: "achievement",
+      user: {
+        name: "GoldMaster",
+        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+        badge: "Elite Trader",
+      },
+      action: "Achieved Gold Trader Status",
+      timestamp: "15m ago",
+      icon: "🏆",
+    },
+    {
+      id: 2,
+      type: "sale",
+      user: {
+        name: "SilverKing",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+        badge: "Verified Seller",
+      },
+      action: "Completed a $25,000 sale",
+      item: "100oz Gold Bar",
+      timestamp: "30m ago",
+      icon: "💰",
+    },
+    {
+      id: 3,
+      type: "listing",
+      user: {
+        name: "RareCoins",
+        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
+        badge: "Premium Seller",
+      },
+      action: "Listed a rare collection",
+      item: "Morgan Silver Dollars Set",
+      price: "$12,500",
+      timestamp: "45m ago",
+      icon: "📢",
     },
   ];
 
@@ -276,64 +338,118 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Market Updates and News */}
-        <div>
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
-              Latest Updates
-            </h2>
-            <Link
-              href="/feed"
-              className="text-[#4169E1] hover:text-[#4169E1]/80 font-medium"
-            >
-              View Feed
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Market Updates */}
-            <div className="bg-[#2A2A2A] rounded-xl shadow-lg p-6 border border-[#C0C0C0]/20">
-              <h3 className="font-semibold mb-6 text-[#FFD700]">
-                Market Updates
-              </h3>
-              <div className="space-y-6">
-                {newsItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex gap-4 pb-4 border-b border-[#C0C0C0]/20 last:border-0"
-                  >
-                    <div className="relative w-24 h-24 flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-1 text-[#C0C0C0]">
-                        {item.title}
+        {/* Market Updates and Community Activity */}
+        <div className="grid md:grid-cols-2 gap-8 mt-12">
+          {/* Market Updates */}
+          <div className="card p-6">
+            <h3 className="text-xl font-semibold mb-6 text-[#FFD700]">
+              Market Updates
+            </h3>
+            <div className="space-y-6">
+              {marketUpdates.map((update) => (
+                <div
+                  key={update.id}
+                  className="flex gap-4 pb-4 border-b border-[#C0C0C0]/20 last:border-0"
+                >
+                  <div className="relative w-24 h-24 flex-shrink-0">
+                    <Image
+                      src={update.image}
+                      alt={update.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-[#C0C0C0]">
+                        {update.title}
                       </h4>
-                      <p className="text-sm text-[#C0C0C0]/80 mb-2">
-                        {item.content}
-                      </p>
-                      <div className="text-xs text-[#C0C0C0]/60">
-                        {item.timestamp} • by {item.author}
+                      <span
+                        className={`text-sm ${
+                          update.trend === "up"
+                            ? "text-[#50C878]"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {update.change}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#C0C0C0]/80 mt-1">
+                      {update.content}
+                    </p>
+                    <div className="flex justify-between items-center mt-2 text-xs text-[#C0C0C0]/60">
+                      <div>
+                        <span className="font-medium">{update.author}</span>
+                        <span className="mx-1">•</span>
+                        <span>{update.authorRole}</span>
                       </div>
+                      <span>{update.timestamp}</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+            <button className="w-full mt-4 text-[#4169E1] hover:text-[#4169E1]/80 transition-colors">
+              View All Updates
+            </button>
+          </div>
 
-            {/* Community Activity */}
-            <div className="bg-[#2A2A2A] rounded-xl shadow-lg p-6 border border-[#C0C0C0]/20">
-              <h3 className="font-semibold mb-6 text-[#FFD700]">
-                Community Activity
-              </h3>
-              <div className="space-y-4">
-                {/* Add community feed items here */}
-              </div>
+          {/* Community Activity */}
+          <div className="card p-6">
+            <h3 className="text-xl font-semibold mb-6 text-[#FFD700]">
+              Community Activity
+            </h3>
+            <div className="space-y-4">
+              {communityActivity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-4 p-3 rounded-lg hover:bg-[#333333] transition-colors"
+                >
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <Image
+                        src={activity.user.avatar}
+                        alt={activity.user.name}
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                      />
+                    </div>
+                    <span className="absolute -bottom-1 -right-1 text-xl">
+                      {activity.icon}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-[#C0C0C0]">
+                        {activity.user.name}
+                      </span>
+                      <span className="text-xs px-2 py-1 bg-[#4169E1]/10 text-[#4169E1] rounded-full">
+                        {activity.user.badge}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#C0C0C0]/80 mt-1">
+                      {activity.action}
+                      {activity.item && (
+                        <span className="text-[#FFD700]"> {activity.item}</span>
+                      )}
+                      {activity.price && (
+                        <span className="text-[#50C878]">
+                          {" "}
+                          {activity.price}
+                        </span>
+                      )}
+                    </p>
+                    <span className="text-xs text-[#C0C0C0]/60">
+                      {activity.timestamp}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
+            <button className="w-full mt-4 text-[#4169E1] hover:text-[#4169E1]/80 transition-colors">
+              View All Activity
+            </button>
           </div>
         </div>
       </div>
