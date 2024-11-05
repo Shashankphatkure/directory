@@ -8,6 +8,7 @@ import {
   UserGroupIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 export default function EventsPage() {
   const [filter, setFilter] = useState("upcoming");
@@ -154,12 +155,12 @@ export default function EventsPage() {
                 </div>
               </div>
               <div className="flex gap-4 pt-4">
-                <button className="flex-1 bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors">
-                  Register Now
-                </button>
-                <button className="px-6 py-2 rounded-lg border border-[#C0C0C0]/20 text-[#C0C0C0] hover:bg-[#C0C0C0]/10 transition-colors">
-                  Learn More
-                </button>
+                <Link
+                  href={`/events/${featuredEvent.id}`}
+                  className="flex-1 bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors text-center"
+                >
+                  View Details
+                </Link>
               </div>
             </div>
           </div>
@@ -187,51 +188,53 @@ export default function EventsPage() {
       {events.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {events.map((event) => (
-            <div key={event.id} className="card overflow-hidden group">
-              <div className="relative aspect-[16/9]">
-                <Image
-                  src={event.image || "/placeholder-event.jpg"}
-                  alt={event.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {event.is_virtual && (
-                  <div className="absolute top-4 right-4 bg-[#4169E1] text-white px-3 py-1 rounded-full text-sm">
-                    Virtual Event
-                  </div>
-                )}
-              </div>
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-[#FFD700]">
-                    {event.title}
-                  </h3>
-                  <span className="text-sm text-[#C0C0C0]/60">
-                    {event.type}
-                  </span>
+            <Link href={`/events/${event.id}`} key={event.id}>
+              <div className="card overflow-hidden group">
+                <div className="relative aspect-[16/9]">
+                  <Image
+                    src={event.image || "/placeholder-event.jpg"}
+                    alt={event.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {event.is_virtual && (
+                    <div className="absolute top-4 right-4 bg-[#4169E1] text-white px-3 py-1 rounded-full text-sm">
+                      Virtual Event
+                    </div>
+                  )}
                 </div>
-                <p className="text-[#C0C0C0]/80 mb-4 line-clamp-2">
-                  {event.description}
-                </p>
-                <div className="space-y-2 text-sm text-[#C0C0C0]/60">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    <span>{formatEventDate(event.date)}</span>
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-lg font-semibold text-[#FFD700]">
+                      {event.title}
+                    </h3>
+                    <span className="text-sm text-[#C0C0C0]/60">
+                      {event.type}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4" />
-                    <span>{event.location || "Online Event"}</span>
+                  <p className="text-[#C0C0C0]/80 mb-4 line-clamp-2">
+                    {event.description}
+                  </p>
+                  <div className="space-y-2 text-sm text-[#C0C0C0]/60">
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{formatEventDate(event.date)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span>{event.location || "Online Event"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <UserGroupIcon className="h-4 w-4" />
+                      <span>{event.event_attendees.length} Registered</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <UserGroupIcon className="h-4 w-4" />
-                    <span>{event.event_attendees.length} Registered</span>
-                  </div>
+                  <button className="w-full mt-4 bg-[#4169E1] text-white py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors">
+                    View Details
+                  </button>
                 </div>
-                <button className="w-full mt-4 bg-[#4169E1] text-white py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors">
-                  Register Now
-                </button>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (
