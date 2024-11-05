@@ -1,44 +1,85 @@
 "use client";
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { TrashIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { useUser, useSessionContext } from "@supabase/auth-helpers-react";
+import {
+  getOrCreateCart,
+  getCartItems,
+  updateCartItem,
+  removeCartItem,
+} from "@/utils/cartOperations";
 
 export default function CartPage() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: "1oz Gold American Eagle",
-      price: 1950.0,
-      shipping: 15.0,
-      quantity: 1,
-      seller: "GoldExpert",
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-    },
-    {
-      id: 2,
-      title: "Silver Canadian Maple x5",
-      price: 165.0,
-      shipping: 8.0,
-      quantity: 1,
-      seller: "SilverTrader",
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-    },
-  ]);
+  const { isLoading, session } = useSessionContext();
+  const user = session?.user;
+  const [cartItems, setCartItems] = useState([]);
+  const [cartId, setCartId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const updateQuantity = (id, change) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
+  useEffect(() => {
+    if (isLoading) return;
+
+    async function loadCart() {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const cart = await getOrCreateCart(user.id);
+        setCartId(cart.id);
+        const items = await getCartItems(cart.id);
+        setCartItems(items);
+      } catch (error) {
+        console.error("Error loading cart:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCart();
+  }, [user, isLoading]);
+
+  if (isLoading || loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-[#C0C0C0]">Loading cart...</div>
+      </div>
     );
+  }
+
+  if (!user) {
+    return null; // Router will handle redirect
+  }
+
+  const updateQuantity = async (id, change) => {
+    const updatedItems = cartItems.map((item) =>
+      item.id === id
+        ? { ...item, quantity: Math.max(1, item.quantity + change) }
+        : item
+    );
+
+    const updatedItem = updatedItems.find((item) => item.id === id);
+    if (updatedItem) {
+      try {
+        await updateCartItem(cartId, updatedItem);
+        setCartItems(updatedItems);
+      } catch (error) {
+        console.error("Error updating quantity:", error);
+      }
+    }
   };
 
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+    try {
+      await removeCartItem(id);
+      setCartItems((items) => items.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
   };
 
   const subtotal = cartItems.reduce(

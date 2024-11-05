@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { getOrCreateCart, getCartItems } from "@/utils/cartOperations";
 import {
   LockClosedIcon,
   CheckCircleIcon,
@@ -12,30 +14,47 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { isLoading, session } = useSessionContext();
+  const user = session?.user;
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock cart items
-  const cartItems = [
-    {
-      id: 1,
-      title: "1oz Gold American Eagle",
-      price: 1950.0,
-      shipping: 15.0,
-      quantity: 1,
-      seller: "GoldExpert",
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-    },
-    {
-      id: 2,
-      title: "Silver Canadian Maple x5",
-      price: 165.0,
-      shipping: 8.0,
-      quantity: 1,
-      seller: "SilverTrader",
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-    },
-  ];
+  useEffect(() => {
+    if (isLoading) return;
+
+    async function loadCheckoutData() {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const cart = await getOrCreateCart(user.id);
+        const items = await getCartItems(cart.id);
+        setCartItems(items);
+      } catch (error) {
+        console.error("Error loading checkout data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCheckoutData();
+  }, [user, isLoading]);
+
+  if (isLoading || loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-[#C0C0C0]">Loading checkout...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Router will handle redirect
+  }
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -155,49 +174,6 @@ export default function CheckoutPage() {
                       className="w-full bg-[#333333] border border-[#C0C0C0]/20 rounded px-3 py-2 text-[#C0C0C0]"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm text-[#C0C0C0] mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      className="w-full bg-[#333333] border border-[#C0C0C0]/20 rounded px-3 py-2 text-[#C0C0C0]"
-                    />
-                  </div>
-                </div>
-
-                {/* Shipping Options */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-[#FFD700] mb-4">
-                    Shipping Method
-                  </h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center p-4 border border-[#C0C0C0]/20 rounded-lg cursor-pointer hover:border-[#4169E1]">
-                      <input
-                        type="radio"
-                        name="shipping"
-                        className="mr-3"
-                        defaultChecked
-                      />
-                      <div>
-                        <div className="text-[#C0C0C0]">Standard Shipping</div>
-                        <div className="text-sm text-[#C0C0C0]/60">
-                          3-5 business days
-                        </div>
-                      </div>
-                      <div className="ml-auto text-[#50C878]">$15.00</div>
-                    </label>
-                    <label className="flex items-center p-4 border border-[#C0C0C0]/20 rounded-lg cursor-pointer hover:border-[#4169E1]">
-                      <input type="radio" name="shipping" className="mr-3" />
-                      <div>
-                        <div className="text-[#C0C0C0]">Express Shipping</div>
-                        <div className="text-sm text-[#C0C0C0]/60">
-                          1-2 business days
-                        </div>
-                      </div>
-                      <div className="ml-auto text-[#50C878]">$25.00</div>
-                    </label>
-                  </div>
                 </div>
               </div>
             )}
@@ -280,28 +256,6 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   )}
-
-                  <div className="flex items-center gap-4 p-4 border border-[#C0C0C0]/20 rounded-lg">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="paypal"
-                      checked={paymentMethod === "paypal"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                    />
-                    <div className="flex-1">
-                      <div className="text-[#C0C0C0]">PayPal</div>
-                      <div className="text-sm text-[#C0C0C0]/60">
-                        Pay with your PayPal account
-                      </div>
-                    </div>
-                    <Image
-                      src="/paypal.png"
-                      alt="PayPal"
-                      width={40}
-                      height={25}
-                    />
-                  </div>
                 </div>
               </div>
             )}
@@ -311,8 +265,6 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold text-[#FFD700]">
                   Review Order
                 </h2>
-
-                {/* Order Items */}
                 <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div
@@ -332,34 +284,19 @@ export default function CheckoutPage() {
                           {item.title}
                         </h3>
                         <p className="text-sm text-[#C0C0C0]/60">
-                          Seller: {item.seller}
-                        </p>
-                        <p className="text-sm text-[#C0C0C0]/60">
                           Quantity: {item.quantity}
                         </p>
                       </div>
                       <div className="text-right">
                         <div className="text-[#50C878] font-bold">
-                          ${item.price}
+                          ${(item.price * item.quantity).toFixed(2)}
                         </div>
                         <div className="text-sm text-[#C0C0C0]/60">
-                          +${item.shipping} shipping
+                          +${item.shipping.toFixed(2)} shipping
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
-
-                {/* Terms and Conditions */}
-                <div className="p-4 border border-[#C0C0C0]/20 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" className="mt-1" />
-                    <span className="text-sm text-[#C0C0C0]/80">
-                      I agree to the Terms of Service and acknowledge that my
-                      order will be processed according to the PeerMetals
-                      Purchase Protection Policy.
-                    </span>
-                  </label>
                 </div>
               </div>
             )}
@@ -391,8 +328,6 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold mb-6 text-[#FFD700]">
               Order Summary
             </h2>
-
-            {/* Order Details */}
             <div className="space-y-4">
               <div className="flex justify-between text-[#C0C0C0]">
                 <span>Subtotal</span>
@@ -420,17 +355,6 @@ export default function CheckoutPage() {
                 <ShieldCheckIcon className="h-4 w-4" />
                 <span>Buyer Protection Guarantee</span>
               </div>
-            </div>
-
-            {/* Need Help? */}
-            <div className="mt-6 pt-6 border-t border-[#C0C0C0]/20 text-center">
-              <p className="text-sm text-[#C0C0C0]/60 mb-2">Need help?</p>
-              <a
-                href="/contact"
-                className="text-[#4169E1] text-sm hover:text-[#4169E1]/80"
-              >
-                Contact Support
-              </a>
             </div>
           </div>
         </div>

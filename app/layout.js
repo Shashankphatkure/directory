@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import SupabaseProvider from "@/components/providers/SupabaseProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,11 +16,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <SupabaseProvider>
+          <AuthProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );

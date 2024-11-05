@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { getOrCreateCart, updateCartItem } from "@/utils/cartOperations";
 import {
   HeartIcon,
   ShareIcon,
@@ -15,11 +18,15 @@ import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import { fetchSingleListing } from "@/utils/supabase/queries";
 
 export default function ListingPage({ params }) {
+  const router = useRouter();
+  const { isLoading, session } = useSessionContext();
+  const user = session?.user;
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     loadListing();
@@ -35,6 +42,37 @@ export default function ListingPage({ params }) {
       setError("Failed to load listing");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+      const cart = await getOrCreateCart(user.id);
+
+      const cartItem = {
+        cart_id: cart.id,
+        title: listing.title,
+        price: listing.price,
+        shipping: 15.0, // You might want to make this dynamic based on the listing
+        quantity: 1,
+        seller: listing.profiles.username,
+        image: listing.images?.[0] || "/placeholder.jpg",
+        listing_id: listing.id, // Add this to track which listing this cart item is for
+      };
+
+      await updateCartItem(cart.id, cartItem);
+      router.push("/cart");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      // You might want to show an error message to the user here
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -127,8 +165,12 @@ export default function ListingPage({ params }) {
                 ${listing.price.toFixed(2)}
               </div>
             </div>
-            <button className="w-full bg-[#4169E1] text-white py-3 rounded-lg hover:bg-[#4169E1]/80 transition-colors mb-3">
-              Add to Cart
+            <button
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+              className="w-full bg-[#4169E1] text-white py-3 rounded-lg hover:bg-[#4169E1]/80 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {addingToCart ? "Adding to Cart..." : "Add to Cart"}
             </button>
             <button className="w-full border border-[#C0C0C0]/20 text-[#C0C0C0] py-3 rounded-lg hover:bg-[#333333] transition-colors">
               Make Offer
