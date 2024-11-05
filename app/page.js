@@ -2,84 +2,116 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [featuredListings, setFeaturedListings] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [marketUpdates, setMarketUpdates] = useState([]);
+  const [communityActivity, setCommunityActivity] = useState([]);
 
-  // Enhanced mock data for featured items
-  const featuredItems = [
-    {
-      id: 1,
-      title: "Silver Canadian Maple x5 Lot",
-      seller: "Nashemon007",
-      price: 165,
-      shipping: 5,
-      rep: 128,
-      image: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356",
-    },
-    {
-      id: 2,
-      title: "American Silver Eagle 1oz",
-      seller: "JamesinGym",
-      price: 30,
-      shipping: 4,
-      rep: 15,
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-    },
-    {
-      id: 3,
-      title: "$100FV 90% Junk Silver",
-      seller: "ThatSilverGuy",
-      price: 2100,
-      shipping: 10,
-      rep: 338,
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-    },
-    {
-      id: 4,
-      title: "1oz Gold Canadian Maple",
-      seller: "ChadGreen318",
-      price: 2500,
-      shipping: 5,
-      rep: 69,
-      image: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-    },
-  ];
+  useEffect(() => {
+    fetchFeaturedListings();
+    fetchCommunityActivity();
+  }, []);
 
-  // Enhanced categories with images
-  const categories = [
-    {
-      id: 1,
-      name: "Gold Coins",
-      count: 1234,
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-      description: "Explore rare and investment-grade gold coins",
-    },
-    {
-      id: 2,
-      name: "Silver Bars",
-      count: 567,
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-      description: "Find silver bars from trusted mints worldwide",
-    },
-    {
-      id: 3,
-      name: "Platinum",
-      count: 89,
-      image: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-      description: "Discover premium platinum bullion products",
-    },
-    {
-      id: 4,
-      name: "Collectibles",
-      count: 432,
-      image: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356",
-      description: "Browse unique and rare numismatic pieces",
-    },
-  ];
+  async function fetchFeaturedListings() {
+    try {
+      // Fetch featured listings with seller information
+      const { data: listings, error } = await supabase
+        .from("listings")
+        .select(
+          `
+          *,
+          profiles:user_id (
+            username,
+            reputation,
+            avatar_url
+          )
+        `
+        )
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(4);
 
-  // Mock carousel slides
+      if (error) throw error;
+
+      // Transform the data to match your frontend structure
+      const transformedListings = listings.map((listing) => ({
+        id: listing.id,
+        title: listing.title,
+        seller: listing.profiles.username,
+        price: listing.price,
+        shipping: 5, // You might want to add this to your schema
+        rep: listing.profiles.reputation,
+        image: listing.images[0], // Using the first image from the images array
+      }));
+
+      setFeaturedListings(transformedListings);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    }
+  }
+
+  async function fetchCommunityActivity() {
+    try {
+      // Fetch recent transactions and reviews
+      const { data: activities, error } = await supabase
+        .from("transactions")
+        .select(
+          `
+          id,
+          amount,
+          created_at,
+          listings (title),
+          profiles:seller_id (
+            username,
+            avatar_url,
+            is_verified
+          )
+        `
+        )
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+
+      // Transform the data
+      const transformedActivities = activities.map((activity) => ({
+        id: activity.id,
+        type: "sale",
+        user: {
+          name: activity.profiles.username,
+          avatar:
+            activity.profiles.avatar_url ||
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+          badge: activity.profiles.is_verified ? "Verified Seller" : "Member",
+        },
+        action: `Completed a $${activity.amount} sale`,
+        item: activity.listings.title,
+        timestamp: getRelativeTime(new Date(activity.created_at)),
+        icon: "💰",
+      }));
+
+      setCommunityActivity(transformedActivities);
+    } catch (error) {
+      console.error("Error fetching community activity:", error);
+    }
+  }
+
+  // Helper function to format relative time
+  function getRelativeTime(date) {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / 1000 / 60);
+
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  }
+
+  // Keep the carousel slides as is for now
   const carouselSlides = [
     {
       image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
@@ -99,88 +131,6 @@ export default function Home() {
       title: "Rare Collectibles",
       description: "Find unique pieces for your collection",
       link: "/marketplace?category=collectibles",
-    },
-  ];
-
-  // Enhanced market updates
-  const marketUpdates = [
-    {
-      id: 1,
-      title: "Gold Surges to New All-Time High",
-      content:
-        "Gold prices break $2,100/oz amid global economic uncertainty...",
-      timestamp: "2h ago",
-      author: "Sarah Johnson",
-      authorRole: "Senior Market Analyst",
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-      change: "+2.5%",
-      trend: "up",
-    },
-    {
-      id: 2,
-      title: "Silver Industrial Demand Soars",
-      content: "Growing EV and solar panel production drives silver demand...",
-      timestamp: "4h ago",
-      author: "Michael Chen",
-      authorRole: "Industry Expert",
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-      change: "+1.8%",
-      trend: "up",
-    },
-    {
-      id: 3,
-      title: "Platinum Market Analysis",
-      content:
-        "Supply constraints could lead to higher platinum prices in 2024...",
-      timestamp: "6h ago",
-      author: "David Williams",
-      authorRole: "Precious Metals Strategist",
-      image: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-      change: "+0.9%",
-      trend: "up",
-    },
-  ];
-
-  // Enhanced community activity
-  const communityActivity = [
-    {
-      id: 1,
-      type: "achievement",
-      user: {
-        name: "GoldMaster",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-        badge: "Elite Trader",
-      },
-      action: "Achieved Gold Trader Status",
-      timestamp: "15m ago",
-      icon: "🏆",
-    },
-    {
-      id: 2,
-      type: "sale",
-      user: {
-        name: "SilverKing",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-        badge: "Verified Seller",
-      },
-      action: "Completed a $25,000 sale",
-      item: "100oz Gold Bar",
-      timestamp: "30m ago",
-      icon: "💰",
-    },
-    {
-      id: 3,
-      type: "listing",
-      user: {
-        name: "RareCoins",
-        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
-        badge: "Premium Seller",
-      },
-      action: "Listed a rare collection",
-      item: "Morgan Silver Dollars Set",
-      price: "$12,500",
-      timestamp: "45m ago",
-      icon: "📢",
     },
   ];
 
@@ -299,7 +249,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredItems.map((item) => (
+            {featuredListings.map((item) => (
               <Link
                 key={item.id}
                 href={`/listings/${item.id}`}
