@@ -111,65 +111,148 @@ export default function Home() {
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
   }
 
-  // Keep the carousel slides as is for now
+  // First, update the carouselSlides data with better content
   const carouselSlides = [
     {
       image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-      title: "Premium Gold Collection",
+      title: "Rare Gold Coins & Bullion",
+      subtitle: "Premium Collection",
       description:
-        "Explore our curated selection of investment-grade gold coins",
+        "Discover investment-grade gold coins and bars from trusted sellers",
       link: "/marketplace?category=gold",
+      stats: {
+        items: "2.5k+",
+        sellers: "500+",
+        rating: "4.9",
+      },
     },
     {
       image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-      title: "Silver Special",
-      description: "Discover amazing deals on silver bars and coins",
+      title: "Silver Market",
+      subtitle: "Weekly Specials",
+      description:
+        "Explore our curated selection of silver products at competitive prices",
       link: "/marketplace?category=silver",
+      stats: {
+        items: "3k+",
+        sellers: "750+",
+        rating: "4.8",
+      },
     },
     {
       image: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-      title: "Rare Collectibles",
-      description: "Find unique pieces for your collection",
+      title: "Collectible Treasures",
+      subtitle: "Limited Editions",
+      description: "Find authenticated rare coins and unique collectibles",
       link: "/marketplace?category=collectibles",
+      stats: {
+        items: "1.2k+",
+        sellers: "300+",
+        rating: "4.9",
+      },
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#333333]">
       {/* Hero Carousel */}
-      <div className="relative aspect-[21/9] bg-[#C0C0C0]">
+      <div className="relative h-[700px] bg-[#1A1A1A] overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src={carouselSlides[activeSlide].image}
             alt="Featured"
             fill
-            className="object-cover transition-opacity duration-500"
+            className="object-cover transition-all duration-700 ease-in-out transform scale-105"
+            priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#333333]/70 to-transparent">
-            <div className="container mx-auto px-4 h-full flex items-center">
-              <div className="max-w-xl text-white">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                  {carouselSlides[activeSlide].title}
-                </h1>
-                <p className="text-xl mb-8 text-[#C0C0C0]">
-                  {carouselSlides[activeSlide].description}
-                </p>
+          {/* Overlay Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A] via-[#1A1A1A]/85 to-transparent">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-transparent to-transparent" />
+          </div>
+
+          <div className="container mx-auto px-6 h-full flex items-center relative z-10">
+            <div className="max-w-3xl space-y-8">
+              {/* Subtitle with animated line */}
+              <div className="flex items-center space-x-4">
+                <div className="h-[2px] w-12 bg-[#FFD700]" />
+                <span className="text-[#FFD700] font-medium tracking-wider text-lg uppercase">
+                  {carouselSlides[activeSlide].subtitle}
+                </span>
+              </div>
+
+              {/* Title with animation */}
+              <h1 className="text-6xl md:text-7xl font-bold text-white leading-tight">
+                {carouselSlides[activeSlide].title}
+              </h1>
+
+              {/* Description */}
+              <p className="text-xl text-[#C0C0C0] leading-relaxed max-w-2xl">
+                {carouselSlides[activeSlide].description}
+              </p>
+
+              {/* Stats Row */}
+              <div className="flex space-x-8 py-6">
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-[#FFD700]">
+                    {carouselSlides[activeSlide].stats.items}
+                  </p>
+                  <p className="text-sm text-[#C0C0C0] uppercase tracking-wider">
+                    Listed Items
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-[#FFD700]">
+                    {carouselSlides[activeSlide].stats.sellers}
+                  </p>
+                  <p className="text-sm text-[#C0C0C0] uppercase tracking-wider">
+                    Active Sellers
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-[#FFD700]">
+                    {carouselSlides[activeSlide].stats.rating}
+                  </p>
+                  <p className="text-sm text-[#C0C0C0] uppercase tracking-wider">
+                    Avg Rating
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex space-x-4 pt-4">
                 <Link
                   href={carouselSlides[activeSlide].link}
-                  className="inline-block bg-[#4169E1] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#4169E1]/80 transition-colors"
+                  className="group inline-flex items-center px-8 py-4 rounded-lg bg-[#FFD700] text-[#1A1A1A] font-semibold text-lg hover:bg-[#F5C400] transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 >
-                  Explore Now
+                  Explore Collection
+                  <ChevronRightIcon className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="/marketplace"
+                  className="inline-flex items-center px-8 py-4 rounded-lg border-2 border-[#C0C0C0] text-[#C0C0C0] font-semibold text-lg hover:bg-[#C0C0C0]/10 transition-all duration-300"
+                >
+                  View All
                 </Link>
               </div>
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-between p-4">
+
+        {/* Navigation Arrows with Labels */}
+        <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 md:px-8">
           <button
-            onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
-            className="p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+            onClick={() =>
+              setActiveSlide((prev) =>
+                prev === 0 ? carouselSlides.length - 1 : prev - 1
+              )
+            }
+            className="group flex items-center space-x-2 p-3 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white transition-all duration-300"
+            aria-label="Previous slide"
           >
-            <ChevronLeftIcon className="h-6 w-6" />
+            <ChevronLeftIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            <span className="hidden md:block text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+              Previous
+            </span>
           </button>
           <button
             onClick={() =>
@@ -177,21 +260,39 @@ export default function Home() {
                 prev === carouselSlides.length - 1 ? 0 : prev + 1
               )
             }
-            className="p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+            className="group flex items-center space-x-2 p-3 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white transition-all duration-300"
+            aria-label="Next slide"
           >
-            <ChevronRightIcon className="h-6 w-6" />
+            <span className="hidden md:block text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+              Next
+            </span>
+            <ChevronRightIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
           </button>
         </div>
-        {/* Carousel Indicators */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+
+        {/* Enhanced Slide Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
           {carouselSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setActiveSlide(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                activeSlide === index ? "bg-white" : "bg-white/50"
-              }`}
-            />
+              className={`group relative h-2 transition-all duration-300 rounded-full overflow-hidden
+                ${
+                  activeSlide === index
+                    ? "w-12 bg-[#FFD700]"
+                    : "w-2 bg-white/50 hover:bg-white/70"
+                }`}
+              aria-label={`Go to slide ${index + 1}`}
+            >
+              <div
+                className={`absolute inset-0 bg-[#FFD700] transform transition-transform duration-3000 ease-linear
+                  ${
+                    activeSlide === index
+                      ? "-translate-x-0"
+                      : "-translate-x-full"
+                  }`}
+              />
+            </button>
           ))}
         </div>
       </div>
