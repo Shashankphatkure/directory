@@ -13,6 +13,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
+const gradientOverlay = "bg-gradient-to-t from-black/60 to-transparent";
+const glassEffect = "backdrop-blur-sm bg-black/30";
+
 export default function EventPage() {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
@@ -156,108 +159,167 @@ export default function EventPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="relative aspect-[16/9] mb-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D]">
+      <div className="relative">
+        {/* Hero Section with Parallax Effect */}
+        <div className="relative h-[50vh] lg:h-[70vh] w-full overflow-hidden">
           <Image
             src={event.image || "/placeholder-event.jpg"}
             alt={event.title}
             fill
-            className="object-cover rounded-lg"
+            className="object-cover"
+            priority
           />
-          {event.is_virtual && (
-            <div className="absolute top-4 right-4 bg-[#4169E1] text-white px-3 py-1 rounded-full text-sm">
-              Virtual Event
-            </div>
-          )}
-        </div>
+          <div className={`absolute inset-0 ${gradientOverlay}`} />
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-6">
-            <h1 className="text-3xl font-bold text-[#FFD700]">{event.title}</h1>
-            <p className="text-[#C0C0C0]/80 whitespace-pre-wrap">
-              {event.description}
-            </p>
-
-            <div className="flex items-center gap-4">
-              <Image
-                src={event.profiles.avatar_url || "/placeholder-avatar.jpg"}
-                alt={event.profiles.username}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div>
-                <p className="text-[#C0C0C0]">Organized by</p>
-                <p className="text-[#FFD700]">{event.profiles.username}</p>
+          {/* Floating Event Info */}
+          <div className="absolute bottom-0 left-0 right-0 p-8">
+            <div className="container mx-auto">
+              <div className={`${glassEffect} p-6 rounded-xl max-w-3xl`}>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  {event.title}
+                </h1>
+                <div className="flex flex-wrap gap-4 text-white/90">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5" />
+                    {formatEventDate(event.date)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5" />
+                    {formatEventTime(event.time_start)} -{" "}
+                    {formatEventTime(event.time_end)}
+                  </div>
+                  {event.is_virtual && (
+                    <span className="bg-[#4169E1] px-3 py-1 rounded-full text-sm">
+                      Virtual Event
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="card p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 text-[#C0C0C0]">
-                <CalendarIcon className="h-5 w-5" />
-                <span>{formatEventDate(event.date)}</span>
-              </div>
-              <div className="flex items-center gap-4 text-[#C0C0C0]">
-                <ClockIcon className="h-5 w-5" />
-                <span>
-                  {formatEventTime(event.time_start)} -{" "}
-                  {formatEventTime(event.time_end)}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 text-[#C0C0C0]">
-                <MapPinIcon className="h-5 w-5" />
-                <span>{event.location || "Online Event"}</span>
-              </div>
-              <div className="flex items-center gap-4 text-[#C0C0C0]">
-                <UserGroupIcon className="h-5 w-5" />
-                <span>{event.event_attendees.length} Registered</span>
-              </div>
-              {event.max_attendees && (
-                <div className="flex items-center gap-4 text-[#C0C0C0]">
-                  <UserIcon className="h-5 w-5" />
-                  <span>{event.max_attendees} Max Attendees</span>
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Organizer Info */}
+              <div className={`${glassEffect} p-6 rounded-xl`}>
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={event.profiles.avatar_url || "/placeholder-avatar.jpg"}
+                    alt={event.profiles.username}
+                    width={56}
+                    height={56}
+                    className="rounded-full ring-2 ring-[#FFD700]"
+                  />
+                  <div>
+                    <p className="text-[#C0C0C0]">Organized by</p>
+                    <p className="text-[#FFD700] text-lg font-semibold">
+                      {event.profiles.username}
+                    </p>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Description */}
+              <div className={`${glassEffect} p-6 rounded-xl`}>
+                <h2 className="text-2xl font-semibold text-white mb-4">
+                  About this event
+                </h2>
+                <p className="text-[#C0C0C0] leading-relaxed whitespace-pre-wrap">
+                  {event.description}
+                </p>
+              </div>
             </div>
 
-            <button
-              onClick={handleRegistration}
-              disabled={
-                isRegistering ||
-                (event.max_attendees &&
-                  event.event_attendees.length >= event.max_attendees &&
-                  !isRegistered)
-              }
-              className={`w-full py-2 px-4 rounded-lg transition-colors ${
-                isRegistered
-                  ? "bg-red-500 hover:bg-red-600 text-white"
-                  : "bg-[#4169E1] hover:bg-[#4169E1]/80 text-white"
-              } ${
-                event.max_attendees &&
-                event.event_attendees.length >= event.max_attendees &&
-                !isRegistered
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              {isRegistering
-                ? "Processing..."
-                : isRegistered
-                ? "Cancel Registration"
-                : event.max_attendees &&
-                  event.event_attendees.length >= event.max_attendees
-                ? "Event Full"
-                : "Register Now"}
-            </button>
+            {/* Right Column - Registration Card */}
+            <div className="lg:sticky lg:top-8 h-fit">
+              <div className={`${glassEffect} p-6 rounded-xl space-y-6`}>
+                <div className="space-y-4">
+                  {/* ... existing event details ... */}
+                  <div className="flex items-center gap-4 text-[#C0C0C0]">
+                    <UserGroupIcon className="h-5 w-5" />
+                    <div>
+                      <span className="text-lg font-semibold text-white">
+                        {event.event_attendees.length}
+                      </span>
+                      <span className="ml-2">Registered</span>
+                    </div>
+                  </div>
 
-            {event.price > 0 && (
-              <div className="text-center text-[#C0C0C0]">
-                Price: ${event.price}
+                  {event.max_attendees && (
+                    <div className="flex items-center gap-4 text-[#C0C0C0]">
+                      <UserIcon className="h-5 w-5" />
+                      <div>
+                        <span className="text-lg font-semibold text-white">
+                          {event.max_attendees}
+                        </span>
+                        <span className="ml-2">Max Attendees</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Progress Bar for Capacity */}
+                  {event.max_attendees && (
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                      <div
+                        className="bg-[#4169E1] h-2.5 rounded-full"
+                        style={{
+                          width: `${
+                            (event.event_attendees.length /
+                              event.max_attendees) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Registration Button */}
+                <button
+                  onClick={handleRegistration}
+                  disabled={
+                    isRegistering ||
+                    (event.max_attendees &&
+                      event.event_attendees.length >= event.max_attendees &&
+                      !isRegistered)
+                  }
+                  className={`w-full py-3 px-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-[1.02] ${
+                    isRegistered
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white"
+                      : "bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white"
+                  } ${
+                    event.max_attendees &&
+                    event.event_attendees.length >= event.max_attendees &&
+                    !isRegistered
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {isRegistering
+                    ? "Processing..."
+                    : isRegistered
+                    ? "Cancel Registration"
+                    : event.max_attendees &&
+                      event.event_attendees.length >= event.max_attendees
+                    ? "Event Full"
+                    : "Register Now"}
+                </button>
+
+                {event.price > 0 && (
+                  <div className="text-center">
+                    <span className="text-[#C0C0C0]">Price: </span>
+                    <span className="text-[#FFD700] text-xl font-bold">
+                      ${event.price}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

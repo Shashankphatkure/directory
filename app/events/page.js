@@ -103,145 +103,155 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4">
-        Events & Meetups
-      </h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D]">
+      {/* Hero Section */}
+      <div className="relative bg-black/40 py-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Discover Amazing Events
+          </h1>
+          <p className="text-xl text-white/80 max-w-2xl">
+            Join our community events, workshops, and meetups. Connect with
+            fellow developers and expand your network.
+          </p>
+        </div>
+      </div>
 
-      {/* Featured Event */}
-      {featuredEvent && (
-        <div className="card p-6 mb-12">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="relative aspect-[16/9]">
-              <Image
-                src={featuredEvent.image || "/placeholder-event.jpg"}
-                alt={featuredEvent.title}
-                fill
-                className="object-cover rounded-lg"
-              />
-              {featuredEvent.is_virtual && (
-                <div className="absolute top-4 right-4 bg-[#4169E1] text-white px-3 py-1 rounded-full text-sm">
-                  Virtual Event
-                </div>
-              )}
-            </div>
-            <div className="space-y-4">
-              <span className="text-[#4169E1] text-sm font-medium">
-                Featured Event
-              </span>
-              <h2 className="text-2xl font-bold text-[#FFD700]">
-                {featuredEvent.title}
-              </h2>
-              <p className="text-[#C0C0C0]/80">{featuredEvent.description}</p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-4 text-[#C0C0C0]/60">
-                  <CalendarIcon className="h-5 w-5" />
-                  <span>{formatEventDate(featuredEvent.date)}</span>
-                </div>
-                <div className="flex items-center gap-4 text-[#C0C0C0]/60">
-                  <ClockIcon className="h-5 w-5" />
-                  <span>
-                    {formatEventTime(featuredEvent.time_start)} -{" "}
-                    {formatEventTime(featuredEvent.time_end)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-[#C0C0C0]/60">
-                  <MapPinIcon className="h-5 w-5" />
-                  <span>{featuredEvent.location || "Online Event"}</span>
-                </div>
-                <div className="flex items-center gap-4 text-[#C0C0C0]/60">
-                  <UserGroupIcon className="h-5 w-5" />
-                  <span>{featuredEvent.event_attendees.length} Registered</span>
-                </div>
+      <div className="container mx-auto px-4 py-12">
+        {/* Event Filters */}
+        <div className="flex gap-4 mb-12 overflow-x-auto pb-2">
+          {["upcoming", "past", "virtual", "in-person"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`px-6 py-3 rounded-xl capitalize transition-all transform hover:scale-[1.02] ${
+                filter === type
+                  ? "bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white font-semibold"
+                  : "backdrop-blur-sm bg-white/5 text-white/80 hover:bg-white/10"
+              }`}
+            >
+              {type.replace("-", " ")}
+            </button>
+          ))}
+        </div>
+
+        {/* Featured Event */}
+        {featuredEvent && (
+          <div className="mb-16 rounded-2xl overflow-hidden backdrop-blur-sm bg-black/30">
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="relative aspect-video">
+                <Image
+                  src={featuredEvent.image || "/placeholder-event.jpg"}
+                  alt={featuredEvent.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                {featuredEvent.is_virtual && (
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white px-4 py-2 rounded-xl">
+                    Virtual Event
+                  </div>
+                )}
               </div>
-              <div className="flex gap-4 pt-4">
+              <div className="p-8 flex flex-col justify-center">
+                <span className="text-[#4169E1] text-sm font-semibold tracking-wider uppercase mb-2">
+                  Featured Event
+                </span>
+                <h2 className="text-3xl font-bold text-white mb-4">
+                  {featuredEvent.title}
+                </h2>
+                <p className="text-white/80 mb-6 line-clamp-3">
+                  {featuredEvent.description}
+                </p>
+
+                {/* Event Details */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-white/70">
+                      <CalendarIcon className="h-5 w-5" />
+                      <span>{formatEventDate(featuredEvent.date)}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-white/70">
+                      <ClockIcon className="h-5 w-5" />
+                      <span>{formatEventTime(featuredEvent.time_start)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-white/70">
+                      <MapPinIcon className="h-5 w-5" />
+                      <span>{featuredEvent.location || "Online Event"}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-white/70">
+                      <UserGroupIcon className="h-5 w-5" />
+                      <span>
+                        {featuredEvent.event_attendees.length} Registered
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <Link
                   href={`/events/${featuredEvent.id}`}
-                  className="flex-1 bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors text-center"
+                  className="bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white px-8 py-3 rounded-xl hover:scale-[1.02] transition-transform text-center font-semibold"
                 >
                   View Details
                 </Link>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Event Filters */}
-      <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-        {["upcoming", "past", "virtual", "in-person"].map((type) => (
-          <button
-            key={type}
-            onClick={() => setFilter(type)}
-            className={`px-4 py-2 rounded-lg capitalize transition-colors whitespace-nowrap ${
-              filter === type
-                ? "bg-[#4169E1] text-white"
-                : "text-[#C0C0C0] hover:bg-[#333333]"
-            }`}
-          >
-            {type.replace("-", " ")}
-          </button>
-        ))}
-      </div>
-
-      {/* Events Grid */}
-      {events.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event) => (
-            <Link href={`/events/${event.id}`} key={event.id}>
-              <div className="card overflow-hidden group">
-                <div className="relative aspect-[16/9]">
-                  <Image
-                    src={event.image || "/placeholder-event.jpg"}
-                    alt={event.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {event.is_virtual && (
-                    <div className="absolute top-4 right-4 bg-[#4169E1] text-white px-3 py-1 rounded-full text-sm">
-                      Virtual Event
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-[#FFD700]">
+        {/* Events Grid */}
+        {events.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {events.map((event) => (
+              <Link href={`/events/${event.id}`} key={event.id}>
+                <div className="rounded-xl overflow-hidden backdrop-blur-sm bg-black/30 hover:transform hover:scale-[1.02] transition-all duration-300">
+                  <div className="relative aspect-video">
+                    <Image
+                      src={event.image || "/placeholder-event.jpg"}
+                      alt={event.title}
+                      fill
+                      className="object-cover"
+                    />
+                    {event.is_virtual && (
+                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white px-3 py-1 rounded-xl text-sm">
+                        Virtual Event
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-white mb-2">
                       {event.title}
                     </h3>
-                    <span className="text-sm text-[#C0C0C0]/60">
-                      {event.type}
-                    </span>
-                  </div>
-                  <p className="text-[#C0C0C0]/80 mb-4 line-clamp-2">
-                    {event.description}
-                  </p>
-                  <div className="space-y-2 text-sm text-[#C0C0C0]/60">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      <span>{formatEventDate(event.date)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPinIcon className="h-4 w-4" />
-                      <span>{event.location || "Online Event"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserGroupIcon className="h-4 w-4" />
-                      <span>{event.event_attendees.length} Registered</span>
+                    <p className="text-white/70 mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
+                    <div className="space-y-2 text-sm text-white/60">
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>{formatEventDate(event.date)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPinIcon className="h-4 w-4" />
+                        <span>{event.location || "Online Event"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <UserGroupIcon className="h-4 w-4" />
+                        <span>{event.event_attendees.length} Registered</span>
+                      </div>
                     </div>
                   </div>
-                  <button className="w-full mt-4 bg-[#4169E1] text-white py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors">
-                    View Details
-                  </button>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-[#C0C0C0]/60">No {filter} events found.</p>
-        </div>
-      )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-white/60">No {filter} events found.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
