@@ -67,3 +67,29 @@ export async function fetchListings({
 
   return { data, count };
 }
+
+export async function fetchSingleListing(listingId) {
+  const supabase = createClientComponentClient();
+
+  const { data: listing, error } = await supabase
+    .from("listings")
+    .select(
+      `
+      *,
+      profiles:user_id (
+        id,
+        username,
+        reputation,
+        created_at
+      )
+    `
+    )
+    .eq("id", listingId)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return listing;
+}
