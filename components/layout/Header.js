@@ -61,11 +61,11 @@ export default function Header() {
                 <span className="font-medium">Feed</span>
               </Link>
               <Link
-                href="/sell"
+                href="/seller"
                 className="flex items-center space-x-1 text-[#C0C0C0] hover:text-[#4169E1] transition-colors"
               >
                 <PlusCircleIcon className="h-5 w-5" />
-                <span className="font-medium">Sell</span>
+                <span className="font-medium">Seller</span>
               </Link>
               <Link
                 href="/wallet"
