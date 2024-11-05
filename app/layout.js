@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
-import SupabaseProvider from "@/components/providers/SupabaseProvider";
+import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 

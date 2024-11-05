@@ -9,14 +9,24 @@ import {
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 
-export default function FeedItem({ item }) {
+export default function FeedItem({ item, onLike, onComment, currentUser }) {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(item.likes || 0);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikes(isLiked ? likes - 1 : likes + 1);
+  };
+
+  const handleSubmitComment = (e) => {
+    e.preventDefault();
+    if (commentText.trim()) {
+      onComment(commentText);
+      setCommentText("");
+    }
   };
 
   return (

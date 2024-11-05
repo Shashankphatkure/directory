@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import FeedItem from "@/components/social/FeedItem";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 import {
   TrophyIcon,
   FireIcon,
@@ -13,102 +14,246 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function FeedPage() {
+  const { supabase, session } = useSupabase();
   const [activeTab, setActiveTab] = useState("following");
   const [showPostModal, setShowPostModal] = useState(false);
+  const [feedItems, setFeedItems] = useState([]);
+  const [userAchievements, setUserAchievements] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock user achievements
-  const userAchievements = {
-    level: 12,
-    metalPoints: 2450,
-    badges: [
-      {
-        id: 1,
-        name: "Early Adopter",
-        icon: "🌟",
-        description: "Joined during platform launch",
-      },
-      {
-        id: 2,
-        name: "Trading Pro",
-        icon: "💎",
-        description: "Completed 100 successful trades",
-      },
-      {
-        id: 3,
-        name: "Community Leader",
-        icon: "👑",
-        description: "Helped 50 members",
-      },
-    ],
-    recentMilestones: [
-      {
-        id: 1,
-        title: "Reached Level 10",
-        reward: "250 Metal Points",
-        date: "2 days ago",
-      },
-      {
-        id: 2,
-        title: "100th Trade",
-        reward: "Exclusive Badge",
-        date: "1 week ago",
-      },
-    ],
+  useEffect(() => {
+    if (session?.user) {
+      fetchUserAchievementsAndAwards();
+      fetchFeedItems();
+    }
+  }, [session, activeTab]);
+
+  const fetchUserAchievementsAndAwards = async () => {
+    try {
+      // Fetch user achievements
+      const { data: achievements, error: achievementsError } = await supabase
+        .from("user_achievements")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("awarded_at", { ascending: false });
+
+      if (achievementsError) throw achievementsError;
+
+      // Fetch user awards
+      const { data: awards, error: awardsError } = await supabase
+        .from("user_awards")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("awarded_at", { ascending: false });
+
+      if (awardsError) throw awardsError;
+
+      // Calculate total achievements/awards for level
+      const totalCount = (achievements?.length || 0) + (awards?.length || 0);
+      const level = Math.floor(totalCount / 5) + 1; // Adjust the division number as needed
+
+      // Calculate metal points (you may want to adjust this logic)
+      const metalPoints = achievements.reduce((total, achievement) => {
+        // Add points based on achievement type
+        switch (achievement.achievement_type) {
+          case "TRADE":
+            return total + 100;
+          case "SOCIAL":
+            return total + 50;
+          default:
+            return total + 25;
+        }
+      }, 0);
+
+      setUserAchievements({
+        level: level,
+        metalPoints: metalPoints,
+        badges:
+          awards?.map((award) => ({
+            id: award.id,
+            name: award.name,
+            icon: award.icon,
+            description: award.description || "Achievement unlocked!",
+            awarded_at: award.awarded_at,
+          })) || [],
+        recentMilestones:
+          achievements?.slice(0, 3).map((achievement) => ({
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            icon: achievement.icon,
+            awarded_at: achievement.awarded_at,
+          })) || [],
+      });
+    } catch (error) {
+      console.error("Error fetching user achievements:", error);
+    }
   };
 
-  // Mock feed items
-  const feedItems = [
-    {
-      id: 1,
-      type: "achievement",
-      user: {
-        name: "John Smith",
-        username: "johnsmith",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-        verified: true,
-      },
-      achievement: "Gold Trader Status Achieved! 🏆",
-      description: "Completed 100 successful trades with perfect feedback",
-      timestamp: "2h ago",
-      likes: 124,
-      comments: 18,
-      metalPoints: 500,
-    },
-    {
-      id: 2,
-      type: "listing",
-      user: {
-        name: "Silver Expert",
-        username: "silverexpert",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-        verified: true,
-      },
-      title: "1oz Silver Eagle MS70",
-      price: 75.0,
-      image: "https://images.unsplash.com/photo-1607292803062-5b8ff0531b88",
-      timestamp: "3h ago",
-      likes: 45,
-      comments: 8,
-      metalPoints: 100,
-    },
-    {
-      id: 3,
-      type: "market_update",
-      user: {
-        name: "Market Analyst",
-        username: "analyst",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-        verified: true,
-      },
-      title: "Gold Hits New High",
-      content: "Gold prices surge to record levels amid market uncertainty...",
-      image: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-      timestamp: "4h ago",
-      likes: 256,
-      comments: 42,
-      metalPoints: 150,
-    },
-  ];
+  const fetchFeedItems = async () => {
+    try {
+      setIsLoading(true);
+      let query = supabase.from("user_achievements").select(`
+          *,
+          profiles:user_id (
+            id,
+            email,
+            username,
+            full_name,
+            avatar_url
+          ),
+          post_likes(count),
+          post_comments(count)
+        `);
+
+      // Apply filters based on active tab
+      if (activeTab === "following") {
+        // Get list of users that the current user follows
+        const { data: followingData } = await supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", session.user.id);
+
+        const followingIds = followingData?.map((f) => f.following_id) || [];
+
+        // Include current user's ID to see their own posts
+        followingIds.push(session.user.id);
+
+        query = query.in("user_id", followingIds);
+      } else if (activeTab === "trending") {
+        // Order by engagement (likes + comments)
+        query = query
+          .order("post_likes(count)", { ascending: false })
+          .order("post_comments(count)", { ascending: false });
+      } else {
+        // "recent" tab
+        query = query.order("awarded_at", { ascending: false });
+      }
+
+      const { data, error } = await query.limit(10);
+
+      if (error) throw error;
+
+      const formattedFeedItems = await Promise.all(
+        data.map(async (item) => {
+          // Get like status for current user
+          const { data: likeData } = await supabase
+            .from("post_likes")
+            .select("id")
+            .eq("post_id", item.id)
+            .eq("user_id", session.user.id)
+            .single();
+
+          // Get comment count
+          const { count: commentCount } = await supabase
+            .from("post_comments")
+            .select("id", { count: true })
+            .eq("post_id", item.id);
+
+          return {
+            id: item.id,
+            type: "achievement",
+            user: {
+              id: item.profiles.id,
+              name: item.profiles.full_name,
+              username: item.profiles.username,
+              avatar: item.profiles.avatar_url,
+              verified: item.profiles.is_verified || false,
+            },
+            achievement: item.title,
+            description: item.description,
+            timestamp: toRelativeTime(item.awarded_at),
+            likes: item.post_likes?.[0]?.count || 0,
+            comments: commentCount || 0,
+            isLiked: !!likeData,
+            metalPoints: getPointsForAchievement(item.achievement_type),
+          };
+        })
+      );
+
+      setFeedItems(formattedFeedItems);
+    } catch (error) {
+      console.error("Error fetching feed items:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLike = async (itemId) => {
+    try {
+      const { data: existingLike } = await supabase
+        .from("post_likes")
+        .select("id")
+        .eq("post_id", itemId)
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (existingLike) {
+        // Unlike
+        await supabase.from("post_likes").delete().eq("id", existingLike.id);
+      } else {
+        // Like
+        await supabase.from("post_likes").insert({
+          post_id: itemId,
+          user_id: session.user.id,
+        });
+      }
+
+      // Refresh feed items
+      fetchFeedItems();
+    } catch (error) {
+      console.error("Error handling like:", error);
+    }
+  };
+
+  const handleComment = async (itemId, content) => {
+    try {
+      await supabase.from("post_comments").insert({
+        post_id: itemId,
+        user_id: session.user.id,
+        content,
+      });
+
+      // Refresh feed items
+      fetchFeedItems();
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
+  };
+
+  // Helper function to determine points based on achievement type
+  const getPointsForAchievement = (type) => {
+    const pointsMap = {
+      TRADE: 100,
+      SOCIAL: 50,
+      BADGE: 75,
+      MILESTONE: 150,
+      DEFAULT: 25,
+    };
+    return pointsMap[type] || pointsMap.DEFAULT;
+  };
+
+  // Function to create a new post
+  const createPost = async (postData) => {
+    try {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .insert([
+          {
+            user_id: session.user.id,
+            ...postData,
+          },
+        ])
+        .select();
+
+      if (error) throw error;
+
+      // Refresh feed items
+      fetchFeedItems();
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -121,17 +266,17 @@ export default function FeedPage() {
                 <TrophyIcon className="h-10 w-10 text-[#FFD700]" />
               </div>
               <h2 className="text-xl font-bold text-[#C0C0C0]">
-                Level {userAchievements.level}
+                Level {userAchievements?.level}
               </h2>
               <div className="text-[#FFD700]">
-                {userAchievements.metalPoints} Metal Points
+                {userAchievements?.metalPoints} Metal Points
               </div>
             </div>
 
             {/* Progress to Next Level */}
             <div className="mb-6">
               <div className="flex justify-between text-sm text-[#C0C0C0]/60 mb-2">
-                <span>Progress to Level {userAchievements.level + 1}</span>
+                <span>Progress to Level {userAchievements?.level + 1}</span>
                 <span>75%</span>
               </div>
               <div className="h-2 bg-[#333333] rounded-full">
@@ -142,7 +287,7 @@ export default function FeedPage() {
             {/* Recent Badges */}
             <div className="space-y-4">
               <h3 className="text-[#FFD700] font-semibold">Recent Badges</h3>
-              {userAchievements.badges.map((badge) => (
+              {userAchievements?.badges.map((badge) => (
                 <div
                   key={badge.id}
                   className="flex items-center gap-3 p-3 bg-[#333333] rounded-lg"
@@ -216,11 +361,28 @@ export default function FeedPage() {
           </div>
 
           {/* Feed Items */}
-          <div className="space-y-6">
-            {feedItems.map((item) => (
-              <FeedItem key={item.id} item={item} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="card p-4 animate-pulse">
+                  <div className="h-4 bg-gray-700 rounded w-3/4 mb-4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {feedItems.map((item) => (
+                <FeedItem
+                  key={item.id}
+                  item={item}
+                  onLike={() => handleLike(item.id)}
+                  onComment={(content) => handleComment(item.id, content)}
+                  currentUser={session?.user}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar - Trending & Leaderboard */}
