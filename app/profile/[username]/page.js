@@ -11,7 +11,7 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/solid";
 
-export default function ProfilePage() {
+export default function ProfilePage({ params }) {
   const [activeTab, setActiveTab] = useState("listings");
   const [isEditing, setIsEditing] = useState(false);
 
