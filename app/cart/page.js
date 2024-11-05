@@ -29,14 +29,6 @@ export default function CartPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-[#C0C0C0]">Loading cart...</div>
-      </div>
-    );
-  }
-
   const updateQuantity = async (listing_id, change) => {
     const updatedItems = cartItems.map((item) =>
       item.listing_id === listing_id
@@ -47,26 +39,39 @@ export default function CartPage() {
     const updatedItem = updatedItems.find(
       (item) => item.listing_id === listing_id
     );
+
     if (updatedItem) {
+      setCartItems(updatedItems); // Update UI first
       try {
         await updateCartItem(null, updatedItem);
-        setCartItems(updatedItems);
       } catch (error) {
         console.error("Error updating quantity:", error);
+        // Revert on error
+        setCartItems(cartItems);
       }
     }
   };
 
   const removeItem = async (listing_id) => {
+    setCartItems((items) =>
+      items.filter((item) => item.listing_id !== listing_id)
+    ); // Update UI first
     try {
       await removeCartItem(null, listing_id);
-      setCartItems((items) =>
-        items.filter((item) => item.listing_id !== listing_id)
-      );
     } catch (error) {
       console.error("Error removing item:", error);
+      // Revert on error
+      loadCart();
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-[#C0C0C0]">Loading cart...</div>
+      </div>
+    );
+  }
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -84,71 +89,77 @@ export default function CartPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items */}
         <div className="lg:w-2/3">
-          <div className="card divide-y divide-[#C0C0C0]/20">
-            {cartItems.map((item) => (
-              <div key={item.id} className="p-6">
-                <div className="flex gap-6">
-                  {/* Product Image */}
-                  <div className="relative w-24 h-24 flex-shrink-0">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
+          {cartItems.length === 0 ? (
+            <div className="card p-6 text-center text-[#C0C0C0]/60">
+              Your cart is empty
+            </div>
+          ) : (
+            <div className="card divide-y divide-[#C0C0C0]/20">
+              {cartItems.map((item) => (
+                <div key={item.listing_id} className="p-6">
+                  <div className="flex gap-6">
+                    {/* Product Image */}
+                    <div className="relative w-24 h-24 flex-shrink-0">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
 
-                  {/* Product Details */}
-                  <div className="flex-1">
-                    <h3 className="text-[#C0C0C0] font-medium mb-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-[#C0C0C0]/60 mb-2">
-                      Sold by: {item.seller}
-                    </p>
-                    <div className="flex items-center gap-4">
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2">
+                    {/* Product Details */}
+                    <div className="flex-1">
+                      <h3 className="text-[#C0C0C0] font-medium mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-[#C0C0C0]/60 mb-2">
+                        Sold by: {item.seller}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateQuantity(item.listing_id, -1)}
+                            className="p-1 rounded-full hover:bg-[#333333] text-[#C0C0C0]/60"
+                          >
+                            <MinusIcon className="h-4 w-4" />
+                          </button>
+                          <span className="text-[#C0C0C0] w-8 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.listing_id, 1)}
+                            className="p-1 rounded-full hover:bg-[#333333] text-[#C0C0C0]/60"
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                        {/* Remove Button */}
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="p-1 rounded-full hover:bg-[#333333] text-[#C0C0C0]/60"
+                          onClick={() => removeItem(item.listing_id)}
+                          className="text-red-500 hover:text-red-400 flex items-center gap-1"
                         >
-                          <MinusIcon className="h-4 w-4" />
-                        </button>
-                        <span className="text-[#C0C0C0] w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="p-1 rounded-full hover:bg-[#333333] text-[#C0C0C0]/60"
-                        >
-                          <PlusIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4" />
+                          <span className="text-sm">Remove</span>
                         </button>
                       </div>
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-red-500 hover:text-red-400 flex items-center gap-1"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        <span className="text-sm">Remove</span>
-                      </button>
                     </div>
-                  </div>
 
-                  {/* Price */}
-                  <div className="text-right">
-                    <div className="text-[#50C878] font-bold">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </div>
-                    <div className="text-sm text-[#C0C0C0]/60">
-                      +${item.shipping.toFixed(2)} shipping
+                    {/* Price */}
+                    <div className="text-right">
+                      <div className="text-[#50C878] font-bold">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </div>
+                      <div className="text-sm text-[#C0C0C0]/60">
+                        +${item.shipping.toFixed(2)} shipping
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Order Summary */}
@@ -176,6 +187,7 @@ export default function CartPage() {
               <button
                 onClick={() => router.push("/checkout")}
                 className="w-full bg-[#4169E1] text-white py-3 rounded-lg hover:bg-[#4169E1]/80 transition-colors"
+                disabled={cartItems.length === 0}
               >
                 Proceed to Checkout
               </button>
@@ -184,26 +196,6 @@ export default function CartPage() {
                 <p>✓ Secure Checkout</p>
                 <p>✓ Protected by PeerMetals Guarantee</p>
               </div>
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="mt-4 card p-4">
-            <div className="flex items-center justify-center gap-4">
-              <Image src="/visa.png" alt="Visa" width={40} height={25} />
-              <Image
-                src="/mastercard.png"
-                alt="Mastercard"
-                width={40}
-                height={25}
-              />
-              <Image
-                src="/amex.png"
-                alt="American Express"
-                width={40}
-                height={25}
-              />
-              <Image src="/paypal.png" alt="PayPal" width={40} height={25} />
             </div>
           </div>
         </div>
