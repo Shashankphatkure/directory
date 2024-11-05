@@ -1,96 +1,36 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+export const getOrCreateCart = async () => {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  return { id: localStorage.getItem("tempCartId"), items: cart };
+};
 
-const supabase = createClientComponentClient();
+export const updateCartItem = async (cartId, item) => {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const existingItemIndex = cart.findIndex(
+    (i) => i.listing_id === item.listing_id
+  );
 
-export async function getOrCreateCart(userId) {
-  // First, try to find an existing active cart
-  const { data: existingCart, error: fetchError } = await supabase
-    .from("carts")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .single();
-
-  if (fetchError && fetchError.code !== "PGRST116") {
-    // PGRST116 is "no rows returned"
-    throw fetchError;
+  if (existingItemIndex > -1) {
+    cart[existingItemIndex] = { ...cart[existingItemIndex], ...item };
+  } else {
+    cart.push(item);
   }
 
-  if (existingCart) {
-    return existingCart;
-  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  return cart;
+};
 
-  // If no active cart exists, create a new one
-  const { data: newCart, error: insertError } = await supabase
-    .from("carts")
-    .insert([
-      {
-        user_id: userId,
-        status: "active",
-      },
-    ])
-    .select()
-    .single();
+export const removeCartItem = async (cartId, itemId) => {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const updatedCart = cart.filter((item) => item.listing_id !== itemId);
+  localStorage.setItem("cart", JSON.stringify(updatedCart));
+  return updatedCart;
+};
 
-  if (insertError) {
-    throw insertError;
-  }
+export const getCartItems = async () => {
+  return JSON.parse(localStorage.getItem("cart") || "[]");
+};
 
-  return newCart;
-}
-
-export async function getCartItems(cartId) {
-  const { data, error } = await supabase
-    .from("cart_items")
-    .select(
-      `
-      *,
-      listings (
-        title,
-        price,
-        image_url,
-        shipping_price,
-        user_id,
-        profiles (
-          username,
-          full_name
-        )
-      )
-    `
-    )
-    .eq("cart_id", cartId);
-
-  if (error) {
-    throw error;
-  }
-
-  return data.map((item) => ({
-    id: item.id,
-    quantity: item.quantity,
-    title: item.listings.title,
-    price: item.listings.price,
-    image: item.listings.image_url,
-    shipping: item.listings.shipping_price,
-    seller: item.listings.profiles.full_name || item.listings.profiles.username,
-  }));
-}
-
-export async function updateCartItem(cartId, item) {
-  const { error } = await supabase
-    .from("cart_items")
-    .update({ quantity: item.quantity })
-    .eq("id", item.id)
-    .eq("cart_id", cartId);
-
-  if (error) {
-    throw error;
-  }
-}
-
-export async function removeCartItem(itemId) {
-  const { error } = await supabase.from("cart_items").delete().eq("id", itemId);
-
-  if (error) {
-    throw error;
-  }
-}
+export const clearCart = async () => {
+  localStorage.removeItem("cart");
+  localStorage.removeItem("tempCartId");
+};

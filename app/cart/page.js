@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TrashIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { useSupabase } from "@/components/providers/SupabaseProvider";
 import {
-  getOrCreateCart,
   getCartItems,
   updateCartItem,
   removeCartItem,
@@ -13,35 +11,23 @@ import {
 
 export default function CartPage() {
   const router = useRouter();
-  const { supabase, session } = useSupabase();
-  const user = session?.user;
   const [cartItems, setCartItems] = useState([]);
-  const [cartId, setCartId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadCart() {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+    loadCart();
+  }, []);
 
-      try {
-        const cart = await getOrCreateCart(user.id);
-        setCartId(cart.id);
-        const items = await getCartItems(cart.id);
-        setCartItems(items);
-      } catch (error) {
-        console.error("Error loading cart:", error);
-      } finally {
-        setLoading(false);
-      }
+  const loadCart = async () => {
+    try {
+      const items = await getCartItems();
+      setCartItems(items);
+    } catch (error) {
+      console.error("Error loading cart:", error);
+    } finally {
+      setLoading(false);
     }
-
-    if (session) {
-      loadCart();
-    }
-  }, [session, user]);
+  };
 
   if (loading) {
     return (
@@ -51,21 +37,19 @@ export default function CartPage() {
     );
   }
 
-  if (!user) {
-    return null; // Router will handle redirect
-  }
-
-  const updateQuantity = async (id, change) => {
+  const updateQuantity = async (listing_id, change) => {
     const updatedItems = cartItems.map((item) =>
-      item.id === id
+      item.listing_id === listing_id
         ? { ...item, quantity: Math.max(1, item.quantity + change) }
         : item
     );
 
-    const updatedItem = updatedItems.find((item) => item.id === id);
+    const updatedItem = updatedItems.find(
+      (item) => item.listing_id === listing_id
+    );
     if (updatedItem) {
       try {
-        await updateCartItem(cartId, updatedItem);
+        await updateCartItem(null, updatedItem);
         setCartItems(updatedItems);
       } catch (error) {
         console.error("Error updating quantity:", error);
@@ -73,10 +57,12 @@ export default function CartPage() {
     }
   };
 
-  const removeItem = async (id) => {
+  const removeItem = async (listing_id) => {
     try {
-      await removeCartItem(id);
-      setCartItems((items) => items.filter((item) => item.id !== id));
+      await removeCartItem(null, listing_id);
+      setCartItems((items) =>
+        items.filter((item) => item.listing_id !== listing_id)
+      );
     } catch (error) {
       console.error("Error removing item:", error);
     }

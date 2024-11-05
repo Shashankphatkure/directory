@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useSupabase } from "@/components/providers/SupabaseProvider";
-import { getOrCreateCart, getCartItems } from "@/utils/cartOperations";
+import { getCartItems, clearCart } from "@/utils/cartOperations";
 import {
   LockClosedIcon,
   CheckCircleIcon,
@@ -14,35 +13,65 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { supabase, session } = useSupabase();
-  const user = session?.user;
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    address: "",
+    city: "",
+    zipCode: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+  });
 
   useEffect(() => {
-    async function loadCheckoutData() {
-      if (!user) {
-        router.push("/login");
+    loadCheckoutData();
+  }, []);
+
+  const loadCheckoutData = async () => {
+    try {
+      const items = await getCartItems();
+      if (items.length === 0) {
+        router.push("/cart");
         return;
       }
-
-      try {
-        const cart = await getOrCreateCart(user.id);
-        const items = await getCartItems(cart.id);
-        setCartItems(items);
-      } catch (error) {
-        console.error("Error loading checkout data:", error);
-      } finally {
-        setLoading(false);
-      }
+      setCartItems(items);
+    } catch (error) {
+      console.error("Error loading checkout data:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (session) {
-      loadCheckoutData();
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    try {
+      // Here you would typically:
+      // 1. Validate all form data
+      // 2. Process payment
+      // 3. Create order in your database
+      // 4. Clear the cart
+
+      await clearCart();
+
+      // Redirect to a success page
+      router.push("/success");
+    } catch (error) {
+      console.error("Error placing order:", error);
+      // Show error message to user
     }
-  }, [session, user]);
+  };
 
   if (loading) {
     return (
@@ -50,10 +79,6 @@ export default function CheckoutPage() {
         <div className="text-center text-[#C0C0C0]">Loading checkout...</div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null; // Router will handle redirect
   }
 
   const subtotal = cartItems.reduce(
@@ -68,57 +93,6 @@ export default function CheckoutPage() {
     { number: 2, title: "Payment", icon: CreditCardIcon },
     { number: 3, title: "Review", icon: ShieldCheckIcon },
   ];
-
-  const handlePlaceOrder = async () => {
-    try {
-      // Create order in database
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert([
-          {
-            user_id: user.id,
-            total_amount: total,
-            shipping_amount: shippingTotal,
-            status: "pending",
-            payment_method: paymentMethod,
-          },
-        ])
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = cartItems.map((item) => ({
-        order_id: order.id,
-        listing_id: item.listing_id,
-        quantity: item.quantity,
-        price: item.price,
-        shipping_price: item.shipping,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Update cart status to completed
-      const { error: cartError } = await supabase
-        .from("carts")
-        .update({ status: "completed" })
-        .eq("user_id", user.id)
-        .eq("status", "active");
-
-      if (cartError) throw cartError;
-
-      // Redirect to confirmation page
-      router.push(`/confirmation?order_id=${order.id}`);
-    } catch (error) {
-      console.error("Error placing order:", error);
-      // You might want to show an error message to the user here
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">

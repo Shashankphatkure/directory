@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSessionContext } from "@supabase/auth-helpers-react";
-import { getOrCreateCart, updateCartItem } from "@/utils/cartOperations";
 import {
   HeartIcon,
   ShareIcon,
@@ -19,8 +17,6 @@ import { fetchSingleListing } from "@/utils/supabase/queries";
 
 export default function ListingPage({ params }) {
   const router = useRouter();
-  const { isLoading, session } = useSessionContext();
-  const user = session?.user;
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [listing, setListing] = useState(null);
@@ -46,31 +42,38 @@ export default function ListingPage({ params }) {
   };
 
   const handleAddToCart = async () => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
     try {
       setAddingToCart(true);
-      const cart = await getOrCreateCart(user.id);
+      const tempCartId =
+        localStorage.getItem("tempCartId") || "temp-" + Date.now();
+      localStorage.setItem("tempCartId", tempCartId);
 
       const cartItem = {
-        cart_id: cart.id,
+        cart_id: tempCartId,
         title: listing.title,
         price: listing.price,
-        shipping: 15.0, // You might want to make this dynamic based on the listing
+        shipping: 15.0,
         quantity: 1,
         seller: listing.profiles.username,
         image: listing.images?.[0] || "/placeholder.jpg",
-        listing_id: listing.id, // Add this to track which listing this cart item is for
+        listing_id: listing.id,
       };
 
-      await updateCartItem(cart.id, cartItem);
+      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const existingItemIndex = existingCart.findIndex(
+        (item) => item.listing_id === listing.id
+      );
+
+      if (existingItemIndex > -1) {
+        existingCart[existingItemIndex].quantity += 1;
+      } else {
+        existingCart.push(cartItem);
+      }
+
+      localStorage.setItem("cart", JSON.stringify(existingCart));
       router.push("/cart");
     } catch (error) {
       console.error("Error adding to cart:", error);
-      // You might want to show an error message to the user here
     } finally {
       setAddingToCart(false);
     }
