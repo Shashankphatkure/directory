@@ -1,24 +1,23 @@
-"use client";
-import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full space-y-8 p-6 card">
         <div>
           <h2 className="text-2xl font-bold text-center text-[#C0C0C0]">
-            Sign in to your account
+            Create your account
           </h2>
         </div>
-        <LoginForm />
+        <RegisterForm />
         <div className="text-center text-[#C0C0C0]">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="text-[#4169E1] hover:text-[#4169E1]/80"
           >
-            Register
+            Sign in
           </Link>
         </div>
       </div>
