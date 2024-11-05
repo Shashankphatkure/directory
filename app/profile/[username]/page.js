@@ -62,7 +62,9 @@ export default function ProfilePage() {
           src={userProfile.banner}
           alt="Profile Banner"
           fill
+          sizes="100vw"
           className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#333333] to-transparent" />
       </div>
@@ -78,7 +80,9 @@ export default function ProfilePage() {
                   src={userProfile.avatar}
                   alt={userProfile.name}
                   fill
+                  sizes="(max-width: 768px) 128px, 128px"
                   className="object-cover"
+                  priority
                 />
               </div>
               {isEditing && (
@@ -185,9 +189,9 @@ export default function ProfilePage() {
             <div className="mt-6 pt-6 border-t border-[#C0C0C0]/20">
               <h3 className="text-[#FFD700] font-semibold mb-3">Awards</h3>
               <div className="flex gap-4">
-                {userProfile.awards.map((award) => (
+                {userProfile.awards.map((award, index) => (
                   <div
-                    key={award.id}
+                    key={`${award.id}-${index}`}
                     className="flex items-center gap-2 bg-[#333333] px-3 py-1 rounded-full"
                   >
                     <span>{award.icon}</span>
@@ -202,9 +206,9 @@ export default function ProfilePage() {
           <div className="mt-6 pt-6 border-t border-[#C0C0C0]/20">
             <div className="flex gap-4">
               {Object.entries(userProfile.socialLinks).map(
-                ([platform, url]) => (
+                ([platform, url], index) => (
                   <a
-                    key={platform}
+                    key={`${platform}-${index}`}
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
