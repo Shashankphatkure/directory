@@ -57,19 +57,39 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     try {
-      // Here you would typically:
-      // 1. Validate all form data
-      // 2. Process payment
-      // 3. Create order in your database
-      // 4. Clear the cart
+      // Basic form validation
+      if (step !== 3) {
+        setStep(step + 1);
+        return;
+      }
 
+      // Simulate order processing
+      setLoading(true);
+
+      // Create a fake order ID
+      const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
+
+      // Store order details if needed
+      localStorage.setItem(
+        "lastOrder",
+        JSON.stringify({
+          id: orderId,
+          date: new Date().toISOString(),
+          total: total,
+          items: cartItems,
+        })
+      );
+
+      // Clear the cart
       await clearCart();
 
-      // Redirect to a success page
+      // Redirect to success page
       router.push("/success");
     } catch (error) {
       console.error("Error placing order:", error);
       // Show error message to user
+    } finally {
+      setLoading(false);
     }
   };
 
