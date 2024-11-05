@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useSessionContext } from "@supabase/auth-helpers-react";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 import { getOrCreateCart, getCartItems } from "@/utils/cartOperations";
 import {
   LockClosedIcon,
@@ -14,7 +14,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isLoading, session } = useSessionContext();
+  const { supabase, session } = useSupabase();
   const user = session?.user;
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
@@ -22,8 +22,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoading) return;
-
     async function loadCheckoutData() {
       if (!user) {
         router.push("/login");
@@ -41,10 +39,12 @@ export default function CheckoutPage() {
       }
     }
 
-    loadCheckoutData();
-  }, [user, isLoading]);
+    if (session) {
+      loadCheckoutData();
+    }
+  }, [session, user]);
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center text-[#C0C0C0]">Loading checkout...</div>
@@ -68,6 +68,57 @@ export default function CheckoutPage() {
     { number: 2, title: "Payment", icon: CreditCardIcon },
     { number: 3, title: "Review", icon: ShieldCheckIcon },
   ];
+
+  const handlePlaceOrder = async () => {
+    try {
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert([
+          {
+            user_id: user.id,
+            total_amount: total,
+            shipping_amount: shippingTotal,
+            status: "pending",
+            payment_method: paymentMethod,
+          },
+        ])
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cartItems.map((item) => ({
+        order_id: order.id,
+        listing_id: item.listing_id,
+        quantity: item.quantity,
+        price: item.price,
+        shipping_price: item.shipping,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Update cart status to completed
+      const { error: cartError } = await supabase
+        .from("carts")
+        .update({ status: "completed" })
+        .eq("user_id", user.id)
+        .eq("status", "active");
+
+      if (cartError) throw cartError;
+
+      // Redirect to confirmation page
+      router.push(`/confirmation?order_id=${order.id}`);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      // You might want to show an error message to the user here
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -312,7 +363,7 @@ export default function CheckoutPage() {
               )}
               <button
                 onClick={() =>
-                  step < 3 ? setStep(step + 1) : router.push("/confirmation")
+                  step < 3 ? setStep(step + 1) : handlePlaceOrder()
                 }
                 className="ml-auto px-6 py-2 bg-[#4169E1] text-white rounded-lg hover:bg-[#4169E1]/80 transition-colors"
               >

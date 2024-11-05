@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TrashIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { useUser, useSessionContext } from "@supabase/auth-helpers-react";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 import {
   getOrCreateCart,
   getCartItems,
@@ -13,15 +13,13 @@ import {
 
 export default function CartPage() {
   const router = useRouter();
-  const { isLoading, session } = useSessionContext();
+  const { supabase, session } = useSupabase();
   const user = session?.user;
   const [cartItems, setCartItems] = useState([]);
   const [cartId, setCartId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoading) return;
-
     async function loadCart() {
       if (!user) {
         router.push("/login");
@@ -40,10 +38,12 @@ export default function CartPage() {
       }
     }
 
-    loadCart();
-  }, [user, isLoading]);
+    if (session) {
+      loadCart();
+    }
+  }, [session, user]);
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center text-[#C0C0C0]">Loading cart...</div>
