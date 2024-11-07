@@ -17,10 +17,12 @@ import {
 } from "@heroicons/react/24/outline";
 import MobileMenu from "./MobileMenu";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { data: session } = useSession();
 
   return (
     <>
@@ -151,6 +153,21 @@ export default function Header() {
                   <SunIcon className="h-5 w-5" />
                 )}
               </button>
+              {session ? (
+                <button
+                  onClick={() => signOut()}
+                  className="text-[#C0C0C0] hover:text-[#FFD700]"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="text-[#C0C0C0] hover:text-[#FFD700]"
+                >
+                  Sign In
+                </Link>
+              )}
             </nav>
 
             {/* Mobile Menu Button */}
