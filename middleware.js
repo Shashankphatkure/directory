@@ -10,6 +10,9 @@ export const config = {
   matcher: [
     "/wallet/:path*",
     "/profile",
+    "/seller",
+    "/notifications",
+    "/transactions",
     // Add other protected routes here
   ],
 };
