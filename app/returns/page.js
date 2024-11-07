@@ -56,7 +56,7 @@ export default function ReturnsPolicy() {
         "Sellers are protected against fraudulent return claims through our verification process. All returns are thoroughly inspected before refunds are issued.",
     },
     {
-      title: "6. Disputes",
+      title: "6. Dispute",
       content:
         "If you disagree with a return decision, you can appeal through our dispute resolution process. Each case will be reviewed by our specialist team.",
     },
