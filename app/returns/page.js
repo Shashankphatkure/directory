@@ -63,14 +63,14 @@ export default function ReturnsPolicy() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D]">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white py-16">
+      <div className="relative bg-black/40 py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Returns Policy
           </h1>
-          <p className="text-xl text-blue-100">
+          <p className="text-xl text-white/80">
             Last updated: {new Date().toLocaleDateString()}
           </p>
         </div>
@@ -80,8 +80,8 @@ export default function ReturnsPolicy() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Introduction */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <p className="text-gray-600 leading-relaxed">
+          <div className="backdrop-blur-sm bg-black/30 rounded-xl p-6 mb-8">
+            <p className="text-white/70 leading-relaxed">
               At PeerMetals, we strive to ensure every transaction is smooth and
               satisfactory. Our returns policy is designed to protect both
               buyers and sellers while maintaining the integrity of our
@@ -94,11 +94,13 @@ export default function ReturnsPolicy() {
             {sections.map((section) => (
               <div
                 key={section.title}
-                className="bg-white rounded-lg shadow-sm p-6"
+                className="backdrop-blur-sm bg-black/30 rounded-xl p-6"
               >
-                <h2 className="text-xl font-bold mb-4">{section.title}</h2>
+                <h2 className="text-xl font-bold mb-4 text-white">
+                  {section.title}
+                </h2>
                 {section.content && (
-                  <p className="text-gray-600 leading-relaxed mb-4">
+                  <p className="text-white/70 leading-relaxed mb-4">
                     {section.content}
                   </p>
                 )}
@@ -106,10 +108,10 @@ export default function ReturnsPolicy() {
                   <div className="space-y-4 ml-4">
                     {section.subsections.map((subsection) => (
                       <div key={subsection.subtitle}>
-                        <h3 className="text-lg font-semibold mb-2">
+                        <h3 className="text-lg font-semibold mb-2 text-[#C0C0C0]">
                           {subsection.subtitle}
                         </h3>
-                        <p className="text-gray-600 leading-relaxed">
+                        <p className="text-white/70 leading-relaxed">
                           {subsection.content}
                         </p>
                       </div>
@@ -121,22 +123,24 @@ export default function ReturnsPolicy() {
           </div>
 
           {/* Contact Section */}
-          <div className="mt-12 bg-blue-50 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-bold mb-4">Need to Return an Item?</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="mt-12 backdrop-blur-sm bg-black/30 rounded-xl p-6 text-center">
+            <h2 className="text-xl font-bold mb-4 text-white">
+              Need to Return an Item?
+            </h2>
+            <p className="text-white/70 mb-6">
               If you need to initiate a return or have questions about our
               return policy, our support team is here to help.
             </p>
             <div className="flex justify-center gap-4">
               <a
                 href="/contact"
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-block bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white px-6 py-3 rounded-xl hover:scale-[1.02] transition-transform font-semibold"
               >
                 Contact Support
               </a>
               <a
                 href="/help/returns"
-                className="inline-block bg-white text-blue-600 px-6 py-2 rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+                className="inline-block backdrop-blur-sm bg-white/10 text-white px-6 py-3 rounded-xl border-2 border-[#4169E1] hover:bg-white/20 transition-colors font-semibold"
               >
                 Return Guide
               </a>

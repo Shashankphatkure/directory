@@ -63,14 +63,14 @@ export default function ShippingPolicyPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D]">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white py-16">
+      <div className="relative bg-black/40 py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Shipping Policy
           </h1>
-          <p className="text-xl text-blue-100">
+          <p className="text-xl text-white/80">
             Last updated: {new Date().toLocaleDateString()}
           </p>
         </div>
@@ -80,8 +80,8 @@ export default function ShippingPolicyPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Introduction */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <p className="text-gray-600 leading-relaxed">
+          <div className="backdrop-blur-sm bg-black/30 rounded-xl p-6 mb-8">
+            <p className="text-white/70 leading-relaxed">
               At PeerMetals, we understand the importance of secure and reliable
               shipping when it comes to precious metals. Our shipping policy is
               designed to ensure your items arrive safely and on time.
@@ -93,11 +93,13 @@ export default function ShippingPolicyPage() {
             {sections.map((section) => (
               <div
                 key={section.title}
-                className="bg-white rounded-lg shadow-sm p-6"
+                className="backdrop-blur-sm bg-black/30 rounded-xl p-6"
               >
-                <h2 className="text-xl font-bold mb-4">{section.title}</h2>
+                <h2 className="text-xl font-bold mb-4 text-white">
+                  {section.title}
+                </h2>
                 {section.content && (
-                  <p className="text-gray-600 leading-relaxed mb-4">
+                  <p className="text-white/70 leading-relaxed mb-4">
                     {section.content}
                   </p>
                 )}
@@ -105,10 +107,10 @@ export default function ShippingPolicyPage() {
                   <div className="space-y-4 ml-4">
                     {section.subsections.map((subsection) => (
                       <div key={subsection.subtitle}>
-                        <h3 className="text-lg font-semibold mb-2">
+                        <h3 className="text-lg font-semibold mb-2 text-[#C0C0C0]">
                           {subsection.subtitle}
                         </h3>
-                        <p className="text-gray-600 leading-relaxed">
+                        <p className="text-white/70 leading-relaxed">
                           {subsection.content}
                         </p>
                       </div>
@@ -120,15 +122,17 @@ export default function ShippingPolicyPage() {
           </div>
 
           {/* Contact Section */}
-          <div className="mt-12 bg-blue-50 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-bold mb-4">Shipping Questions?</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="mt-12 backdrop-blur-sm bg-black/30 rounded-xl p-6 text-center">
+            <h2 className="text-xl font-bold mb-4 text-white">
+              Shipping Questions?
+            </h2>
+            <p className="text-white/70 mb-6">
               If you have any questions about our shipping policies or need
               assistance with a shipment, please contact our support team.
             </p>
             <a
               href="/contact"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-block bg-gradient-to-r from-[#4169E1] to-[#5179F1] text-white px-6 py-3 rounded-xl hover:scale-[1.02] transition-transform font-semibold"
             >
               Contact Support
             </a>
