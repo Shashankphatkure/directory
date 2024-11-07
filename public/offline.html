@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - PeerMetals</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #333333;
+        color: #c0c0c0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+      .container {
+        max-width: 600px;
+      }
+      h1 {
+        color: #ffd700;
+        margin-bottom: 1rem;
+      }
+      p {
+        margin-bottom: 1.5rem;
+      }
+      button {
+        background: #ffd700;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f5c400;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>You're Offline</h1>
+      <p>Please check your internet connection and try again.</p>
+      <button onclick="window.location.reload()">Retry</button>
+    </div>
+  </body>
+</html>
