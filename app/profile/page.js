@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
+import ProfilePage from "./[username]/page";
 
-export default function ProfilePage() {
-  // Redirect to user's profile (you'll need to replace 'current-user' with actual username)
-  redirect("/profile/current-user");
+export default function Profile() {
+  return <ProfilePage />;
 }

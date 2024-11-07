@@ -1,6 +1,8 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useSession } from "next-auth/react";
 import {
   StarIcon,
   ShieldCheckIcon,
@@ -14,15 +16,73 @@ import {
 export default function ProfilePage({ params }) {
   const [activeTab, setActiveTab] = useState("listings");
   const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const supabase = createClientComponentClient();
+  const { data: session } = useSession();
+
+  console.log("Current session:", session);
+
+  useEffect(() => {
+    async function fetchProfileData() {
+      try {
+        setIsLoading(true);
+
+        // Check if session is loaded and user exists
+        if (!session) {
+          return; // Wait for session to load
+        }
+
+        console.log("Full session data:", session); // Debug the full session
+
+        // Get user's profile using user ID instead of email
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id) // Use ID instead of email
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase error:", error); // Log the specific error
+          throw error;
+        }
+
+        if (!data) {
+          console.log("No profile found for user:", session.user); // Debug log
+          setError("Profile not found");
+          return;
+        }
+
+        console.log("Found profile data:", data); // Debug log
+        setProfileData(data);
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+        setError(err.message || "Failed to load profile");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (session?.user) {
+      // Only fetch if we have a user
+      fetchProfileData();
+    }
+  }, [session, supabase]);
 
   const userProfile = {
-    name: "John Smith",
-    username: "metaltrader",
-    bio: "Precious metals enthusiast and collector for over 10 years. Specializing in rare gold coins and silver bullion.",
-    location: "New York, USA",
-    joinDate: "Member since Jan 2024",
-    reputation: 156,
-    verified: true,
+    name: profileData?.full_name || "Loading...",
+    username: profileData?.username || "Loading...",
+    bio: profileData?.bio || "No bio available",
+    location: profileData?.location || "Location not set",
+    joinDate: profileData?.created_at
+      ? `Member since ${new Date(profileData.created_at).toLocaleDateString(
+          "en-US",
+          { month: "short", year: "numeric" }
+        )}`
+      : "Join date unknown",
+    reputation: profileData?.reputation || 0,
+    verified: profileData?.is_verified || false,
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
     banner: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
     listings: 24,
@@ -53,6 +113,41 @@ export default function ProfilePage({ params }) {
     { id: "activity", label: "Activity Feed" },
     { id: "reviews", label: "Reviews" },
   ];
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading session...
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card p-6 text-center">
+          <p className="text-red-500 mb-2">
+            {error === "Profile not found"
+              ? `Profile @${params.username} not found`
+              : "Error loading profile"}
+          </p>
+          <p className="text-[#C0C0C0]/60 text-sm">
+            {error === "Profile not found"
+              ? "Please check the username and try again"
+              : "Please try again later"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

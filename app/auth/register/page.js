@@ -69,6 +69,7 @@ export default function RegisterPage() {
             .upsert(
               {
                 id: user.id,
+                email: formData.email,
                 username: formData.username,
                 full_name: formData.fullName,
                 reputation: 0,

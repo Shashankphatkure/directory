@@ -1,78 +1,76 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { createClient } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-const authOptions = {
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          const {
-            data: { user },
-            error,
-          } = await supabase.auth.signInWithPassword({
-            email: credentials?.email,
-            password: credentials?.password,
-          });
-
-          if (error || !user) {
-            return null;
-          }
-
-          // Get additional user data from profiles table
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: profile?.username,
-            image: profile?.avatar_url,
-          };
-        } catch (error) {
-          console.error("Auth error:", error);
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
+
+        const supabase = createClientComponentClient();
+
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (error || !user) {
+          return null;
+        }
+
+        // Get the user's profile data
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        // Return both auth and profile data
+        return {
+          id: user.id,
+          email: user.email,
+          name: profile?.full_name,
+          username: profile?.username,
+          // Add any other profile data you need
+        };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.username = token.username;
+        // Add any other custom fields you want to include
       }
       return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.username = user.username;
+        // Add any other custom fields
+      }
+      return token;
     },
   },
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
   },
   session: {
     strategy: "jwt",
   },
-};
-
-const handler = NextAuth(authOptions);
+});
 
 export { handler as GET, handler as POST };
