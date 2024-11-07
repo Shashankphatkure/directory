@@ -10,12 +10,27 @@
   --success: #50c878;
   --surface: #2a2a2a;
   --border: rgba(192, 192, 192, 0.2);
+  --background-light: #ffffff;
+  --text-light: #1a1a1a;
+  --background-dark: #2a2a2a;
+  --text-dark: #c0c0c0;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+[data-theme="light"] body {
+  background-color: var(--background-light);
+  color: var(--text-light);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--background-dark);
+  color: var(--text-dark);
 }
 
 /* Custom utility classes */
