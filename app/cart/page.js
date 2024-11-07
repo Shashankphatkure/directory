@@ -3,7 +3,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TrashIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { cartOperations } from "../../utils/cartOperations";
+import {
+  getCartItems,
+  updateCartItem,
+  removeCartItem,
+} from "@/utils/cartOperations";
 
 export default function CartPage() {
   const router = useRouter();
@@ -16,7 +20,7 @@ export default function CartPage() {
 
   const loadCart = async () => {
     try {
-      const items = await cartOperations.getCartItems();
+      const items = await getCartItems();
       setCartItems(items);
     } catch (error) {
       console.error("Error loading cart:", error);
@@ -39,7 +43,7 @@ export default function CartPage() {
     if (updatedItem) {
       setCartItems(updatedItems); // Update UI first
       try {
-        await cartOperations.updateCartItem(null, updatedItem);
+        await updateCartItem(null, updatedItem);
       } catch (error) {
         console.error("Error updating quantity:", error);
         // Revert on error
@@ -53,7 +57,7 @@ export default function CartPage() {
       items.filter((item) => item.listing_id !== listing_id)
     ); // Update UI first
     try {
-      await cartOperations.removeCartItem(null, listing_id);
+      await removeCartItem(null, listing_id);
     } catch (error) {
       console.error("Error removing item:", error);
       // Revert on error

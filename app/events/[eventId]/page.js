@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import {
   CalendarIcon,
@@ -10,7 +10,7 @@ import {
   ClockIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import { AuthContext } from "../../../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 const gradientOverlay = "bg-gradient-to-t from-black/60 to-transparent";

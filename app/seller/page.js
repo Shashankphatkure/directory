@@ -1,7 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
 import {
   ChartBarIcon,
   TruckIcon,
@@ -19,28 +17,6 @@ import Link from "next/link";
 
 export default function SellerDashboard() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-
-  // Protect the route
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/seller");
-    }
-  }, [status, router]);
-
-  // Show loading state while checking authentication
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#333333]">
-        <div className="text-[#C0C0C0] text-xl">Loading...</div>
-      </div>
-    );
-  }
-
-  // Don't render the page content if not authenticated
-  if (status === "unauthenticated") {
-    return null;
-  }
 
   const dashboardStats = [
     {

@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import FeedItem from "../../components/social/FeedItem";
-import { useSupabase } from "../../components/providers/SupabaseProvider";
+import FeedItem from "@/components/social/FeedItem";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 import {
   TrophyIcon,
   FireIcon,
