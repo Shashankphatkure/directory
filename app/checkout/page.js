@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCartItems, clearCart } from "@/utils/cartOperations";
+import { cartOperations } from "../../utils/cartOperations";
 import {
   LockClosedIcon,
   CheckCircleIcon,
@@ -35,7 +35,7 @@ export default function CheckoutPage() {
 
   const loadCheckoutData = async () => {
     try {
-      const items = await getCartItems();
+      const items = await cartOperations.getCartItems();
       if (items.length === 0) {
         router.push("/cart");
         return;
@@ -81,7 +81,7 @@ export default function CheckoutPage() {
       );
 
       // Clear the cart
-      await clearCart();
+      await cartOperations.clearCart();
 
       // Redirect to success page
       router.push("/success");

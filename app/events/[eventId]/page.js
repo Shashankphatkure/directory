@@ -10,7 +10,7 @@ import {
   ClockIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import { useAuth } from "@/contexts/AuthContext";
+import { AuthContext } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 const gradientOverlay = "bg-gradient-to-t from-black/60 to-transparent";
