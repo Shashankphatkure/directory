@@ -13,7 +13,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
-import { fetchSingleListing } from "@/utils/supabase/queries";
+import { queries } from "../../../utils/supabase/queries";
 
 export default function ListingPage({ params }) {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function ListingPage({ params }) {
   const loadListing = async () => {
     try {
       setLoading(true);
-      const data = await fetchSingleListing(params.id);
+      const data = await queries.fetchSingleListing(params.id);
       setListing(data);
     } catch (err) {
       console.error("Error loading listing:", err);
