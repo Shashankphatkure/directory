@@ -53,8 +53,10 @@ export default function ListingForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Image Upload */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Product Images</h2>
+      <div className="bg-[#2A2A2A] rounded-lg shadow-sm p-6 border border-[#C0C0C0]/20">
+        <h2 className="text-lg font-semibold mb-4 text-[#FFD700]">
+          Product Images
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {images.map((image, index) => (
             <div key={index} className="relative aspect-square">
@@ -74,10 +76,10 @@ export default function ListingForm() {
             </div>
           ))}
           {images.length < 8 && (
-            <label className="border-2 border-dashed rounded-lg aspect-square flex items-center justify-center cursor-pointer hover:border-blue-500">
+            <label className="border-2 border-dashed border-[#C0C0C0]/40 rounded-lg aspect-square flex items-center justify-center cursor-pointer hover:border-[#FFD700] transition-colors">
               <div className="text-center">
-                <div className="text-4xl mb-2">+</div>
-                <div className="text-sm text-gray-600">Add Image</div>
+                <div className="text-4xl mb-2 text-[#C0C0C0]">+</div>
+                <div className="text-sm text-[#C0C0C0]/80">Add Image</div>
               </div>
               <input
                 type="file"
@@ -89,17 +91,19 @@ export default function ListingForm() {
             </label>
           )}
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#C0C0C0]/60">
           Upload up to 8 images. First image will be the cover image.
         </p>
       </div>
 
       {/* Basic Information */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
+      <div className="bg-[#2A2A2A] rounded-lg shadow-sm p-6 border border-[#C0C0C0]/20">
+        <h2 className="text-lg font-semibold mb-4 text-[#FFD700]">
+          Basic Information
+        </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
               Title
             </label>
             <input
@@ -108,13 +112,13 @@ export default function ListingForm() {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
               Description
             </label>
             <textarea
@@ -122,14 +126,14 @@ export default function ListingForm() {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full px-4 py-2 border rounded-lg h-32"
+              className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors h-32"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
                 Metal Type
               </label>
               <select
@@ -137,7 +141,7 @@ export default function ListingForm() {
                 onChange={(e) =>
                   setFormData({ ...formData, metalType: e.target.value })
                 }
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors"
                 required
               >
                 <option value="">Select Metal</option>
@@ -149,7 +153,7 @@ export default function ListingForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
                 Weight (oz)
               </label>
               <input
@@ -159,13 +163,13 @@ export default function ListingForm() {
                 onChange={(e) =>
                   setFormData({ ...formData, weight: e.target.value })
                 }
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
                 Purity
               </label>
               <input
@@ -175,14 +179,14 @@ export default function ListingForm() {
                   setFormData({ ...formData, purity: e.target.value })
                 }
                 placeholder="e.g., .999"
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors placeholder-[#C0C0C0]/40"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
               Condition
             </label>
             <select
@@ -190,7 +194,7 @@ export default function ListingForm() {
               onChange={(e) =>
                 setFormData({ ...formData, condition: e.target.value })
               }
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors"
               required
             >
               <option value="">Select Condition</option>
@@ -203,108 +207,147 @@ export default function ListingForm() {
       </div>
 
       {/* Pricing */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Pricing</h2>
+      <div className="bg-[#2A2A2A] rounded-lg shadow-sm p-6 border border-[#C0C0C0]/20">
+        <h2 className="text-lg font-semibold mb-4 text-[#FFD700]">Pricing</h2>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
                 Price ($)
               </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors pl-8"
+                  required
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C0C0C0]/60">
+                  $
+                </span>
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
                 Shipping Price ($)
               </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.shippingPrice}
-                onChange={(e) =>
-                  setFormData({ ...formData, shippingPrice: e.target.value })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.shippingPrice}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shippingPrice: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-[#333333] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors pl-8"
+                  required
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C0C0C0]/60">
+                  $
+                </span>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="flex items-center space-x-2">
+          {/* Enable Offers Section */}
+          <div className="mt-6 p-4 bg-[#333333] rounded-lg border border-[#C0C0C0]/20">
+            <label className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 checked={formData.enableOffers}
                 onChange={(e) =>
                   setFormData({ ...formData, enableOffers: e.target.checked })
                 }
-                className="rounded"
+                className="w-5 h-5 rounded border-[#C0C0C0]/20 text-[#FFD700] focus:ring-[#FFD700] bg-[#2A2A2A]"
               />
-              <span className="text-sm font-medium text-gray-700">
-                Enable Offers
-              </span>
+              <div>
+                <span className="text-sm font-medium text-[#C0C0C0]">
+                  Enable Offers
+                </span>
+                <p className="text-xs text-[#C0C0C0]/60 mt-1">
+                  Allow buyers to submit offers for your listing
+                </p>
+              </div>
             </label>
+
+            {formData.enableOffers && (
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
+                      Auto Accept Price ($)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData.autoAcceptPrice}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            autoAcceptPrice: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-2 bg-[#2A2A2A] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors pl-8"
+                        placeholder="Optional"
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C0C0C0]/60">
+                        $
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#C0C0C0]/60 mt-1">
+                      Automatically accept offers above this amount
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#C0C0C0] mb-1">
+                      Auto Deny Price ($)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData.autoDenyPrice}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            autoDenyPrice: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-2 bg-[#2A2A2A] border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-colors pl-8"
+                        placeholder="Optional"
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C0C0C0]/60">
+                        $
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#C0C0C0]/60 mt-1">
+                      Automatically reject offers below this amount
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          {formData.enableOffers && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Auto Accept Price ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.autoAcceptPrice}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      autoAcceptPrice: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Auto Deny Price ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.autoDenyPrice}
-                  onChange={(e) =>
-                    setFormData({ ...formData, autoDenyPrice: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       <div className="flex justify-end space-x-4">
         <button
           type="button"
-          className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+          className="px-6 py-2 border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] hover:bg-[#333333] transition-all duration-300"
         >
           Save as Draft
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-6 py-2 bg-[#FFD700] text-[#1A1A1A] rounded-lg hover:bg-[#F5C400] transition-all duration-300 font-semibold"
         >
           Publish Listing
         </button>
