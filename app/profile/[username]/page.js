@@ -57,7 +57,7 @@ export default function ProfilePage({ params }) {
   return (
     <div className="min-h-screen">
       {/* Banner */}
-      <div className="relative h-64 w-full">
+      <div className="relative h-48 md:h-64 w-full">
         <Image
           src={userProfile.banner}
           alt="Profile Banner"
@@ -69,13 +69,13 @@ export default function ProfilePage({ params }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#333333] to-transparent" />
       </div>
 
-      <div className="container mx-auto px-4 -mt-20 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 -mt-16 md:-mt-20 relative z-10">
         {/* Profile Header */}
-        <div className="card p-6">
-          <div className="flex flex-col md:flex-row items-start gap-8">
+        <div className="card p-4 md:p-6">
+          <div className="flex flex-col items-center md:items-start md:flex-row gap-6 md:gap-8">
             {/* Avatar */}
             <div className="relative">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-[#2A2A2A]">
+              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#2A2A2A]">
                 <Image
                   src={userProfile.avatar}
                   alt={userProfile.name}
@@ -93,9 +93,9 @@ export default function ProfilePage({ params }) {
             </div>
 
             {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-[#C0C0C0]">
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#C0C0C0]">
                   {userProfile.name}
                 </h1>
                 {userProfile.verified && (
@@ -105,7 +105,7 @@ export default function ProfilePage({ params }) {
               <p className="text-[#C0C0C0]/60 mb-2">@{userProfile.username}</p>
 
               {/* Location and Join Date */}
-              <div className="flex items-center gap-4 text-sm text-[#C0C0C0]/60 mb-4">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm text-[#C0C0C0]/60 mb-4">
                 <span className="flex items-center gap-1">
                   <MapPinIcon className="h-4 w-4" />
                   {userProfile.location}
@@ -120,7 +120,7 @@ export default function ProfilePage({ params }) {
               <p className="text-[#C0C0C0]/80 mb-4">{userProfile.bio}</p>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-6 text-[#C0C0C0]/80">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6 text-sm md:text-base text-[#C0C0C0]/80">
                 <div>
                   <span className="font-bold text-[#FFD700]">
                     {userProfile.listings}
@@ -159,11 +159,11 @@ export default function ProfilePage({ params }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex w-full md:w-auto flex-col sm:flex-row gap-3 mt-4 md:mt-0">
               {isEditing ? (
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="bg-[#50C878] text-white px-6 py-2 rounded-lg hover:bg-[#50C878]/80 transition-colors"
+                  className="w-full sm:w-auto bg-[#50C878] text-white px-6 py-2 rounded-lg hover:bg-[#50C878]/80 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -171,11 +171,11 @@ export default function ProfilePage({ params }) {
                 <>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors"
+                    className="w-full sm:w-auto bg-[#4169E1] text-white px-6 py-2 rounded-lg hover:bg-[#4169E1]/80 transition-colors"
                   >
                     Edit Profile
                   </button>
-                  <button className="flex items-center gap-2 bg-[#333333] text-[#C0C0C0] px-6 py-2 rounded-lg hover:bg-[#333333]/80 transition-colors">
+                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#333333] text-[#C0C0C0] px-6 py-2 rounded-lg hover:bg-[#333333]/80 transition-colors">
                     <UserPlusIcon className="h-5 w-5" />
                     Follow
                   </button>
@@ -186,9 +186,11 @@ export default function ProfilePage({ params }) {
 
           {/* Awards Section */}
           {userProfile.awards.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-[#C0C0C0]/20">
-              <h3 className="text-[#FFD700] font-semibold mb-3">Awards</h3>
-              <div className="flex gap-4">
+            <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#C0C0C0]/20">
+              <h3 className="text-[#FFD700] font-semibold mb-3 text-center md:text-left">
+                Awards
+              </h3>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
                 {userProfile.awards.map((award, index) => (
                   <div
                     key={`${award.id}-${index}`}
@@ -203,8 +205,8 @@ export default function ProfilePage({ params }) {
           )}
 
           {/* Social Links */}
-          <div className="mt-6 pt-6 border-t border-[#C0C0C0]/20">
-            <div className="flex gap-4">
+          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#C0C0C0]/20">
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
               {Object.entries(userProfile.socialLinks).map(
                 ([platform, url], index) => (
                   <a
@@ -224,8 +226,8 @@ export default function ProfilePage({ params }) {
         </div>
 
         {/* Tabs */}
-        <div className="mt-8 border-b border-[#C0C0C0]/20">
-          <div className="flex overflow-x-auto">
+        <div className="mt-6 md:mt-8 border-b border-[#C0C0C0]/20">
+          <div className="flex overflow-x-auto hide-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -243,14 +245,14 @@ export default function ProfilePage({ params }) {
         </div>
 
         {/* Tab Content */}
-        <div className="mt-8">
+        <div className="mt-6 md:mt-8">
           {activeTab === "listings" && (
             <div className="text-center text-[#C0C0C0]/60">
               No active listings to display
             </div>
           )}
           {activeTab === "stack" && (
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {userProfile.personalStack.map((item) => (
                 <div key={item.id} className="card p-4">
                   <h3 className="text-[#FFD700] font-semibold">{item.name}</h3>

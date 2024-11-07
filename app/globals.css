@@ -49,3 +49,13 @@ body {
 .heading {
   @apply text-[#C0C0C0] border-l-4 border-[#FFD700] pl-4;
 }
+
+/* Add this to your global CSS */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
