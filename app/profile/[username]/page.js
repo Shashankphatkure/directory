@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, use, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   StarIcon,
   ShieldCheckIcon,
@@ -10,20 +11,45 @@ import {
   MapPinIcon,
   CalendarIcon,
 } from "@heroicons/react/24/solid";
+import { useSession } from "next-auth/react";
 
 export default function ProfilePage({ params }) {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState("listings");
   const [isEditing, setIsEditing] = useState(false);
 
+  const username = use(params).username;
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin?callbackUrl=/profile/" + username);
+    }
+  }, [status, router, username]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#333333]">
+        <div className="text-[#C0C0C0] text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return null;
+  }
+
   const userProfile = {
-    name: "John Smith",
-    username: "metaltrader",
+    name: session?.user?.name || "Anonymous User",
+    username: username,
     bio: "Precious metals enthusiast and collector for over 10 years. Specializing in rare gold coins and silver bullion.",
     location: "New York, USA",
     joinDate: "Member since Jan 2024",
     reputation: 156,
     verified: true,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+    avatar:
+      session?.user?.image ||
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
     banner: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
     listings: 24,
     sales: 89,

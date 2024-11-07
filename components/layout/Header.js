@@ -17,10 +17,12 @@ import {
 } from "@heroicons/react/24/outline";
 import MobileMenu from "./MobileMenu";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { data: session } = useSession();
 
   return (
     <>
@@ -126,17 +128,24 @@ export default function Header() {
                 <BellIcon className="h-5 w-5" />
                 <span className="font-medium">Notifications</span>
               </Link>
-              <Link
-                href="/profile"
-                className={`flex items-center space-x-1 ${
-                  theme === "light"
-                    ? "text-gray-600 hover:text-[#4169E1]"
-                    : "text-[#C0C0C0] hover:text-[#4169E1]"
-                } transition-colors`}
-              >
-                <UserCircleIcon className="h-5 w-5" />
-                <span className="font-medium">Profile</span>
-              </Link>
+              {session ? (
+                <div className="flex items-center gap-4">
+                  <span className="text-[#C0C0C0]">{session.user.email}</span>
+                  <button
+                    onClick={() => signOut()}
+                    className="text-[#C0C0C0] hover:text-[#FFD700]"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="text-[#C0C0C0] hover:text-[#FFD700]"
+                >
+                  Sign In
+                </Link>
+              )}
               <button
                 onClick={toggleTheme}
                 className={`p-2 rounded-lg ${
