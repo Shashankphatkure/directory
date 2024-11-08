@@ -12,6 +12,7 @@ import {
   MapPinIcon,
   CalendarIcon,
 } from "@heroicons/react/24/solid";
+import { v4 as uuidv4 } from "uuid";
 
 export default function ProfilePage({ params }) {
   const [activeTab, setActiveTab] = useState("listings");
@@ -21,6 +22,8 @@ export default function ProfilePage({ params }) {
   const [error, setError] = useState(null);
   const supabase = createClientComponentClient();
   const { data: session } = useSession();
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   console.log("Current session:", session);
 
@@ -114,6 +117,56 @@ export default function ProfilePage({ params }) {
     { id: "reviews", label: "Reviews" },
   ];
 
+  // Function to handle avatar upload
+  const handleAvatarUpload = async (event) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setUploadingImage(true);
+
+      // Create preview
+      setPreviewImage(URL.createObjectURL(file));
+
+      // Upload to Supabase Storage
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${session.user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", session.user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setProfileData((prev) => ({
+        ...prev,
+        avatar_url: publicUrl,
+      }));
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      alert("Error uploading avatar. Please try again.");
+      // Reset preview if upload failed
+      setPreviewImage(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -168,22 +221,41 @@ export default function ProfilePage({ params }) {
         {/* Profile Header */}
         <div className="card p-4 md:p-6">
           <div className="flex flex-col items-center md:items-start md:flex-row gap-6 md:gap-8">
-            {/* Avatar */}
+            {/* Avatar with Edit Button */}
             <div className="relative">
               <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#2A2A2A]">
                 <Image
-                  src={userProfile.avatar}
-                  alt={userProfile.name}
+                  src={
+                    previewImage ||
+                    profileData?.avatar_url ||
+                    "/default-avatar.png"
+                  }
+                  alt={profileData?.full_name || "Profile"}
                   fill
-                  sizes="(max-width: 768px) 128px, 128px"
+                  sizes="(max-width: 768px) 96px, 128px"
                   className="object-cover"
                   priority
                 />
+                {uploadingImage && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  </div>
+                )}
               </div>
               {isEditing && (
-                <button className="absolute bottom-0 right-0 p-2 bg-[#4169E1] rounded-full text-white">
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 p-2 bg-[#4169E1] rounded-full text-white cursor-pointer hover:bg-[#4169E1]/80 transition-colors"
+                >
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
                   <PencilIcon className="h-4 w-4" />
-                </button>
+                </label>
               )}
             </div>
 
