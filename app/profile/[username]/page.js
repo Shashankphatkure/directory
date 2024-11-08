@@ -30,6 +30,15 @@ export default function ProfilePage({ params }) {
   const [previewImage, setPreviewImage] = useState(null);
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    bio: "",
+    location: "",
+    social_links: {
+      twitter: "",
+      instagram: "",
+      website: "",
+    },
+  });
 
   console.log("Current session:", session);
 
@@ -78,6 +87,51 @@ export default function ProfilePage({ params }) {
       fetchProfileData();
     }
   }, [session, supabase]);
+
+  // Load user data into edit form when editing starts
+  useEffect(() => {
+    if (isEditing && profileData) {
+      setEditForm({
+        bio: profileData.bio || "",
+        location: profileData.location || "",
+        social_links: {
+          twitter: profileData.social_links?.twitter || "",
+          instagram: profileData.social_links?.instagram || "",
+          website: profileData.social_links?.website || "",
+        },
+      });
+    }
+  }, [isEditing, profileData]);
+
+  // Handle save profile changes
+  const handleSaveProfile = async () => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          bio: editForm.bio,
+          location: editForm.location,
+          social_links: editForm.social_links,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", session.user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setProfileData((prev) => ({
+        ...prev,
+        bio: editForm.bio,
+        location: editForm.location,
+        social_links: editForm.social_links,
+      }));
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Error updating profile. Please try again.");
+    }
+  };
 
   const userProfile = {
     name: profileData?.full_name || "Loading...",
@@ -230,6 +284,17 @@ export default function ProfilePage({ params }) {
     );
   };
 
+  // Calculate member since date
+  const memberSince = profileData?.created_at
+    ? `Member since ${new Date(profileData.created_at).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          year: "numeric",
+        }
+      )}`
+    : "Join date unknown";
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -336,18 +401,47 @@ export default function ProfilePage({ params }) {
 
               {/* Location and Join Date */}
               <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm text-[#C0C0C0]/60 mb-4">
-                <span className="flex items-center gap-1">
-                  <MapPinIcon className="h-4 w-4" />
-                  {userProfile.location}
-                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editForm.location}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
+                    placeholder="Add location"
+                    className="bg-[#333333] rounded-lg px-3 py-1 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                  />
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <MapPinIcon className="h-4 w-4" />
+                    {profileData?.location || "Location not set"}
+                  </span>
+                )}
+                <span>•</span>
                 <span className="flex items-center gap-1">
                   <CalendarIcon className="h-4 w-4" />
-                  {userProfile.joinDate}
+                  {memberSince}
                 </span>
               </div>
 
               {/* Bio */}
-              <p className="text-[#C0C0C0]/80 mb-4">{userProfile.bio}</p>
+              {isEditing ? (
+                <textarea
+                  value={editForm.bio}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, bio: e.target.value }))
+                  }
+                  placeholder="Write something about yourself..."
+                  className="w-full h-24 bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] placeholder-[#C0C0C0]/60 focus:outline-none focus:ring-2 focus:ring-[#4169E1] resize-none mb-4"
+                />
+              ) : (
+                <p className="text-[#C0C0C0]/80 mb-4">
+                  {profileData?.bio || "No bio available"}
+                </p>
+              )}
 
               {/* Stats */}
               <div className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6 text-sm md:text-base text-[#C0C0C0]/80">
@@ -391,12 +485,20 @@ export default function ProfilePage({ params }) {
             {/* Action Buttons */}
             <div className="flex w-full md:w-auto flex-col sm:flex-row gap-3 mt-4 md:mt-0">
               {isEditing ? (
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="w-full sm:w-auto bg-[#50C878] text-white px-6 py-2 rounded-lg hover:bg-[#50C878]/80 transition-colors"
-                >
-                  Save Changes
-                </button>
+                <>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="w-full sm:w-auto bg-[#50C878] text-white px-6 py-2 rounded-lg hover:bg-[#50C878]/80 transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="w-full sm:w-auto bg-[#333333] text-[#C0C0C0] px-6 py-2 rounded-lg hover:bg-[#333333]/80 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </>
               ) : (
                 <>
                   <button
@@ -435,24 +537,96 @@ export default function ProfilePage({ params }) {
           )}
 
           {/* Social Links */}
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#C0C0C0]/20">
-            <div className="flex flex-wrap justify-center md:justify-start gap-4">
-              {Object.entries(userProfile.socialLinks).map(
-                ([platform, url], index) => (
-                  <a
-                    key={`${platform}-${index}`}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[#4169E1] hover:text-[#4169E1]/80 transition-colors"
-                  >
-                    <LinkIcon className="h-4 w-4" />
-                    <span className="capitalize">{platform}</span>
-                  </a>
-                )
-              )}
+          {isEditing ? (
+            <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#C0C0C0]/20">
+              <h3 className="text-[#C0C0C0] font-semibold mb-4">
+                Social Links
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                    Twitter
+                  </label>
+                  <input
+                    type="url"
+                    value={editForm.social_links.twitter}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        social_links: {
+                          ...prev.social_links,
+                          twitter: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="https://twitter.com/username"
+                    className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                    Instagram
+                  </label>
+                  <input
+                    type="url"
+                    value={editForm.social_links.instagram}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        social_links: {
+                          ...prev.social_links,
+                          instagram: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="https://instagram.com/username"
+                    className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                    Website
+                  </label>
+                  <input
+                    type="url"
+                    value={editForm.social_links.website}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        social_links: {
+                          ...prev.social_links,
+                          website: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="https://yourwebsite.com"
+                    className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#C0C0C0]/20">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                {profileData?.social_links &&
+                  Object.entries(profileData.social_links).map(
+                    ([platform, url]) =>
+                      url && (
+                        <a
+                          key={platform}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-[#4169E1] hover:text-[#4169E1]/80 transition-colors"
+                        >
+                          <LinkIcon className="h-4 w-4" />
+                          <span className="capitalize">{platform}</span>
+                        </a>
+                      )
+                  )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
