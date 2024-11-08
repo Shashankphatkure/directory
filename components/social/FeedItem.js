@@ -8,31 +8,219 @@ import {
   PlayIcon,
   EllipsisHorizontalIcon,
   GlobeAmericasIcon,
+  FlagIcon,
 } from "@heroicons/react/24/outline";
-import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
+import {
+  HeartIcon as HeartSolidIcon,
+  BookmarkIcon as BookmarkSolidIcon,
+} from "@heroicons/react/24/solid";
+import { useState, useEffect } from "react";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
+import { formatDistanceToNow } from "date-fns";
 
 export default function FeedItem({ item, onLike, onComment, currentUser }) {
+  const { supabase } = useSupabase();
   const [isLiked, setIsLiked] = useState(item.isLiked);
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(item.likes || 0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showOptions, setShowOptions] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes(isLiked ? likes - 1 : likes + 1);
-    onLike(item.id);
+  useEffect(() => {
+    checkIfPostIsSaved();
+    checkIfPostIsLiked();
+  }, [item.id]);
+
+  // Check if post is saved
+  const checkIfPostIsSaved = async () => {
+    const { data } = await supabase
+      .from("saved_posts")
+      .select("id")
+      .eq("post_id", item.id)
+      .eq("user_id", currentUser.id)
+      .single();
+
+    setIsSaved(!!data);
   };
 
-  const handleSubmitComment = (e) => {
-    e.preventDefault();
-    if (commentText.trim()) {
-      onComment(item.id, commentText);
-      setCommentText("");
+  // Check if post is liked
+  const checkIfPostIsLiked = async () => {
+    const { data } = await supabase
+      .from("post_likes")
+      .select("id")
+      .eq("post_id", item.id)
+      .eq("user_id", currentUser.id)
+      .single();
+
+    setIsLiked(!!data);
+  };
+
+  // Handle like
+  const handleLike = async () => {
+    try {
+      if (isLiked) {
+        // Unlike
+        await supabase
+          .from("post_likes")
+          .delete()
+          .eq("post_id", item.id)
+          .eq("user_id", currentUser.id);
+
+        setLikes((prev) => prev - 1);
+      } else {
+        // Like
+        await supabase.from("post_likes").insert({
+          post_id: item.id,
+          user_id: currentUser.id,
+        });
+
+        setLikes((prev) => prev + 1);
+      }
+
+      setIsLiked(!isLiked);
+      onLike?.(item.id);
+    } catch (error) {
+      console.error("Error handling like:", error);
     }
   };
+
+  // Handle save post
+  const handleSavePost = async () => {
+    try {
+      if (isSaved) {
+        await supabase
+          .from("saved_posts")
+          .delete()
+          .eq("post_id", item.id)
+          .eq("user_id", currentUser.id);
+      } else {
+        await supabase.from("saved_posts").insert({
+          post_id: item.id,
+          user_id: currentUser.id,
+        });
+      }
+
+      setIsSaved(!isSaved);
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+
+  // Fetch comments
+  const fetchComments = async () => {
+    try {
+      setIsLoading(true);
+      const { data: comments, error } = await supabase
+        .from("post_comments")
+        .select(
+          `
+          *,
+          profiles:user_id (
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("post_id", item.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setComments(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Submit comment
+  const handleSubmitComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    try {
+      const { data: newComment, error } = await supabase
+        .from("post_comments")
+        .insert({
+          post_id: item.id,
+          user_id: currentUser.id,
+          content: commentText,
+        })
+        .select(
+          `
+          *,
+          profiles:user_id (
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .single();
+
+      if (error) throw error;
+
+      setComments([newComment, ...comments]);
+      setCommentText("");
+      onComment?.(item.id, commentText);
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
+  };
+
+  // Handle share
+  const handleShare = async (platform) => {
+    const shareUrl = `${window.location.origin}/post/${item.id}`;
+
+    switch (platform) {
+      case "twitter":
+        window.open(`https://twitter.com/intent/tweet?url=${shareUrl}`);
+        break;
+      case "facebook":
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`);
+        break;
+      case "copy":
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard!");
+        break;
+    }
+
+    setShowShareModal(false);
+  };
+
+  // Handle report
+  const handleReport = async () => {
+    try {
+      await supabase.from("post_reports").insert({
+        post_id: item.id,
+        user_id: currentUser.id,
+        reason: reportReason,
+      });
+
+      alert("Thank you for your report. We will review it shortly.");
+      setShowReportModal(false);
+      setReportReason("");
+    } catch (error) {
+      console.error("Error reporting post:", error);
+    }
+  };
+
+  // Load comments when comment section is opened
+  useEffect(() => {
+    if (showComments) {
+      fetchComments();
+    }
+  }, [showComments]);
 
   const renderMediaContent = () => {
     switch (item.type) {
@@ -181,7 +369,6 @@ export default function FeedItem({ item, onLike, onComment, currentUser }) {
 
       {/* Content */}
       <div className="px-4">
-        {/* Post Text Content */}
         {item.content && (
           <p className="text-[#C0C0C0] mb-4 whitespace-pre-line text-[15px] leading-relaxed">
             {item.content}
@@ -189,27 +376,30 @@ export default function FeedItem({ item, onLike, onComment, currentUser }) {
         )}
       </div>
 
-      {/* Media Content */}
       {renderMediaContent()}
 
       {/* Engagement Stats */}
       <div className="px-4 py-2 flex items-center justify-between text-sm text-[#C0C0C0]/60 border-b border-[#333333]">
         <div className="flex items-center gap-2">
-          <div className="flex -space-x-1">
-            <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-              ❤️
+          {likes > 0 && (
+            <div className="flex -space-x-1">
+              <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                ❤️
+              </div>
+              {likes > 1 && (
+                <div className="w-5 h-5 rounded-full bg-[#4169E1] flex items-center justify-center">
+                  👍
+                </div>
+              )}
             </div>
-            <div className="w-5 h-5 rounded-full bg-[#4169E1] flex items-center justify-center">
-              👍
-            </div>
-          </div>
+          )}
           <span>{likes} likes</span>
         </div>
         <div className="flex gap-4">
           <button onClick={() => setShowComments(!showComments)}>
-            {item.comments} comments
+            {comments.length} comments
           </button>
-          <button>2 shares</button>
+          <button onClick={() => setShowShareModal(true)}>Share</button>
         </div>
       </div>
 
@@ -235,20 +425,35 @@ export default function FeedItem({ item, onLike, onComment, currentUser }) {
           <ChatBubbleLeftIcon className="h-6 w-6" />
           <span>Comment</span>
         </button>
-        <button className="flex-1 flex items-center justify-center gap-2 py-2 text-[#C0C0C0]/60 rounded-lg hover:bg-[#333333] transition-colors">
+        <button
+          onClick={() => setShowShareModal(true)}
+          className="flex-1 flex items-center justify-center gap-2 py-2 text-[#C0C0C0]/60 rounded-lg hover:bg-[#333333] transition-colors"
+        >
           <ShareIcon className="h-6 w-6" />
           <span>Share</span>
+        </button>
+        <button
+          onClick={handleSavePost}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-[#333333] transition-colors ${
+            isSaved ? "text-[#FFD700]" : "text-[#C0C0C0]/60"
+          }`}
+        >
+          {isSaved ? (
+            <BookmarkSolidIcon className="h-6 w-6" />
+          ) : (
+            <BookmarkIcon className="h-6 w-6" />
+          )}
+          <span>Save</span>
         </button>
       </div>
 
       {/* Comments Section */}
       {showComments && (
         <div className="p-4 space-y-4">
-          {/* Comment Input */}
           <form onSubmit={handleSubmitComment} className="flex gap-2">
             <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
-                src={currentUser?.avatar || "/default-avatar.png"}
+                src={currentUser?.avatar_url || "/default-avatar.png"}
                 alt="Your avatar"
                 fill
                 className="object-cover"
@@ -272,35 +477,116 @@ export default function FeedItem({ item, onLike, onComment, currentUser }) {
             </div>
           </form>
 
-          {/* Demo Comments */}
+          {/* Comments List */}
           <div className="space-y-4">
-            {[1, 2].map((_, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                  <Image
-                    src={`https://i.pravatar.cc/150?img=${i + 10}`}
-                    alt="Commenter avatar"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="bg-[#333333] rounded-2xl p-3">
-                    <p className="font-semibold text-sm text-[#C0C0C0]">
-                      Demo User {i + 1}
-                    </p>
-                    <p className="text-sm text-[#C0C0C0]/80">
-                      This is a demo comment! Great post! 👍
-                    </p>
-                  </div>
-                  <div className="flex gap-4 mt-1 ml-3 text-xs text-[#C0C0C0]/60">
-                    <button className="hover:text-[#4169E1]">Like</button>
-                    <button className="hover:text-[#4169E1]">Reply</button>
-                    <span>2h</span>
-                  </div>
-                </div>
+            {isLoading ? (
+              <div className="text-center text-[#C0C0C0]/60">
+                Loading comments...
               </div>
-            ))}
+            ) : comments.length > 0 ? (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-2">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <Image
+                      src={comment.profiles.avatar_url || "/default-avatar.png"}
+                      alt={`${comment.profiles.username}'s avatar`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-[#333333] rounded-2xl p-3">
+                      <p className="font-semibold text-sm text-[#C0C0C0]">
+                        {comment.profiles.full_name}
+                      </p>
+                      <p className="text-sm text-[#C0C0C0]/80">
+                        {comment.content}
+                      </p>
+                    </div>
+                    <div className="flex gap-4 mt-1 ml-3 text-xs text-[#C0C0C0]/60">
+                      <button className="hover:text-[#4169E1]">Like</button>
+                      <button className="hover:text-[#4169E1]">Reply</button>
+                      <span>
+                        {formatDistanceToNow(new Date(comment.created_at))} ago
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-[#C0C0C0]/60">
+                No comments yet
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-[#C0C0C0] mb-4">
+              Share Post
+            </h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => handleShare("twitter")}
+                className="w-full p-3 flex items-center gap-3 rounded-lg hover:bg-[#333333] transition-colors text-[#C0C0C0]"
+              >
+                Share on Twitter
+              </button>
+              <button
+                onClick={() => handleShare("facebook")}
+                className="w-full p-3 flex items-center gap-3 rounded-lg hover:bg-[#333333] transition-colors text-[#C0C0C0]"
+              >
+                Share on Facebook
+              </button>
+              <button
+                onClick={() => handleShare("copy")}
+                className="w-full p-3 flex items-center gap-3 rounded-lg hover:bg-[#333333] transition-colors text-[#C0C0C0]"
+              >
+                Copy Link
+              </button>
+            </div>
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="mt-4 w-full p-3 bg-[#333333] rounded-lg text-[#C0C0C0] hover:bg-[#333333]/80"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-[#C0C0C0] mb-4">
+              Report Post
+            </h3>
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Why are you reporting this post?"
+              className="w-full h-32 bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] placeholder-[#C0C0C0]/60 focus:outline-none focus:ring-2 focus:ring-[#4169E1] resize-none mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleReport}
+                disabled={!reportReason.trim()}
+                className="flex-1 p-3 bg-red-500 rounded-lg text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                Submit Report
+              </button>
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="flex-1 p-3 bg-[#333333] rounded-lg text-[#C0C0C0] hover:bg-[#333333]/80"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

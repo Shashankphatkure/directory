@@ -187,11 +187,13 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Pass session and signOut */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         theme={theme}
+        session={session}
+        signOut={signOut}
       />
     </>
   );
