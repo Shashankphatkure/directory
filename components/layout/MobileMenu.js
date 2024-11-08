@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import {
   XMarkIcon,
   HomeIcon,
@@ -29,6 +30,15 @@ export default function MobileMenu({ isOpen, onClose }) {
     { icon: Cog6ToothIcon, label: "Settings", href: "/settings" },
     { icon: QuestionMarkCircleIcon, label: "Help", href: "/help" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut({ callbackUrl: "/" });
+      onClose();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div
@@ -71,10 +81,7 @@ export default function MobileMenu({ isOpen, onClose }) {
           {/* Logout Button */}
           <button
             className="w-full flex items-center px-4 py-3 text-red-500 hover:bg-[#333333] transition-colors"
-            onClick={() => {
-              // Add logout logic here
-              onClose();
-            }}
+            onClick={handleLogout}
           >
             <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
             <span>Logout</span>
