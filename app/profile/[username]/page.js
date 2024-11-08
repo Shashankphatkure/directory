@@ -11,8 +11,12 @@ import {
   UserPlusIcon,
   MapPinIcon,
   CalendarIcon,
+  ShoppingBagIcon,
+  PlusIcon,
 } from "@heroicons/react/24/solid";
 import { v4 as uuidv4 } from "uuid";
+import Link from "next/link";
+import { formatDistance } from "date-fns";
 
 export default function ProfilePage({ params }) {
   const [activeTab, setActiveTab] = useState("listings");
@@ -24,6 +28,8 @@ export default function ProfilePage({ params }) {
   const { data: session } = useSession();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [listings, setListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(false);
 
   console.log("Current session:", session);
 
@@ -165,6 +171,63 @@ export default function ProfilePage({ params }) {
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  // Function to fetch user's listings
+  const fetchUserListings = async () => {
+    if (!profileData?.id) return;
+
+    try {
+      setListingsLoading(true);
+      const { data, error } = await supabase
+        .from("listings")
+        .select(
+          `
+          *,
+          profiles:user_id (
+            username,
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("user_id", profileData.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setListings(data || []);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    } finally {
+      setListingsLoading(false);
+    }
+  };
+
+  // Fetch listings when tab changes to listings
+  useEffect(() => {
+    if (activeTab === "listings") {
+      fetchUserListings();
+    }
+  }, [activeTab, profileData?.id]);
+
+  // Function to render listing status badge
+  const renderStatusBadge = (status) => {
+    const statusColors = {
+      active: "bg-green-500/10 text-green-500",
+      sold: "bg-blue-500/10 text-blue-500",
+      pending: "bg-yellow-500/10 text-yellow-500",
+      inactive: "bg-gray-500/10 text-gray-500",
+    };
+
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs ${
+          statusColors[status] || statusColors.inactive
+        }`}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   if (!session) {
@@ -393,7 +456,7 @@ export default function ProfilePage({ params }) {
         </div>
 
         {/* Tabs */}
-        <div className="mt-6 md:mt-8 border-b border-[#C0C0C0]/20">
+        <div className="mt-6  md:mt-8 border-b border-[#C0C0C0]/20">
           <div className="flex overflow-x-auto hide-scrollbar">
             {tabs.map((tab) => (
               <button
@@ -412,10 +475,103 @@ export default function ProfilePage({ params }) {
         </div>
 
         {/* Tab Content */}
-        <div className="mt-6 md:mt-8">
+        <div className="mt-6 mb-6 md:mt-8">
           {activeTab === "listings" && (
-            <div className="text-center text-[#C0C0C0]/60">
-              No active listings to display
+            <div>
+              {listingsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="card p-4 animate-pulse">
+                      <div className="aspect-[4/3] w-full bg-[#333333] rounded-lg mb-4"></div>
+                      <div className="h-4 bg-[#333333] rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-[#333333] rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : listings.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {listings.map((listing) => (
+                    <Link
+                      key={listing.id}
+                      href={`/listings/${listing.id}`}
+                      className="card group hover:border-[#4169E1] transition-colors"
+                    >
+                      {/* Listing Image */}
+                      <div className="relative aspect-[4/3] w-full rounded-t-lg overflow-hidden">
+                        <Image
+                          src={listing.images?.[0] || "/default-listing.jpg"}
+                          alt={listing.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        {renderStatusBadge(listing.status)}
+                      </div>
+
+                      {/* Listing Details */}
+                      <div className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-[#C0C0C0] group-hover:text-[#4169E1] transition-colors">
+                            {listing.title}
+                          </h3>
+                          <p className="text-[#FFD700] font-bold">
+                            ${listing.price.toFixed(2)}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm text-[#C0C0C0]/60 mb-2">
+                          <span>{listing.metal_type}</span>
+                          <span>•</span>
+                          <span>
+                            {listing.weight} {listing.weight_unit}
+                          </span>
+                          {listing.year && (
+                            <>
+                              <span>•</span>
+                              <span>{listing.year}</span>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm text-[#C0C0C0]/60">
+                          <div className="flex items-center gap-2">
+                            <span>{listing.views} views</span>
+                            <span>•</span>
+                            <span>{listing.likes} likes</span>
+                          </div>
+                          <span>
+                            {formatDistance(
+                              new Date(listing.created_at),
+                              new Date(),
+                              { addSuffix: true }
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#333333] mb-4">
+                    <ShoppingBagIcon className="h-8 w-8 text-[#C0C0C0]/60" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#C0C0C0] mb-2">
+                    No Listings Yet
+                  </h3>
+                  <p className="text-[#C0C0C0]/60 mb-4">
+                    This user hasn't posted any listings yet.
+                  </p>
+                  {profileData?.id === session?.user?.id && (
+                    <Link
+                      href="/seller/listings/new"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#4169E1] text-white rounded-lg hover:bg-[#4169E1]/90 transition-colors"
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      <span>Create Listing</span>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {activeTab === "stack" && (
