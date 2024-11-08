@@ -402,7 +402,7 @@ export default function ListingPage({ params: { id } }) {
             )}
 
             {/* Reviews Section */}
-            <div className="mt-8">
+            <div className="mt-16 col-span-full">
               <div className="border-b border-[#333333] mb-6">
                 <h3 className="text-xl font-semibold text-[#C0C0C0] pb-4">
                   Reviews ({reviewStats.total})
@@ -410,11 +410,11 @@ export default function ListingPage({ params: { id } }) {
               </div>
 
               <div className="grid grid-cols-12 gap-6">
-                {/* Reviews Summary - Left Column */}
+                {/* Left Column - Reviews Summary & Price Calculator */}
                 <div className="col-span-4">
-                  <div className="sticky top-24">
+                  <div className="space-y-6">
+                    {/* Reviews Summary Card */}
                     <div className="card p-4">
-                      {/* Overall Rating */}
                       <div className="text-center">
                         <div className="text-4xl font-bold text-[#C0C0C0] mb-2">
                           {reviewStats.average.toFixed(1)}
@@ -461,10 +461,102 @@ export default function ListingPage({ params: { id } }) {
                         Write a Review
                       </button>
                     </div>
+
+                    {/* Price Calculator Card */}
+                    <div className="card p-4">
+                      <h3 className="text-[#FFD700] font-semibold mb-4">
+                        Price Calculator
+                      </h3>
+
+                      {/* Metal Price Chart */}
+                      <div className="h-48 mb-4">
+                        <Line
+                          data={{
+                            labels: ["1M", "3M", "6M", "1Y", "2Y", "5Y"],
+                            datasets: [
+                              {
+                                label: "Metal Price",
+                                data: [1800, 1850, 1900, 1950, 2000, 2050],
+                                borderColor: "#FFD700",
+                                tension: 0.4,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                            },
+                            scales: {
+                              y: {
+                                grid: {
+                                  color: "#333333",
+                                },
+                                ticks: {
+                                  callback: (value) => `$${value}`,
+                                  color: "#C0C0C0",
+                                },
+                              },
+                              x: {
+                                grid: {
+                                  color: "#333333",
+                                },
+                                ticks: {
+                                  color: "#C0C0C0",
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+
+                      {/* Calculator Inputs */}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                            Weight (oz)
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                            placeholder="Enter weight"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                            Premium (%)
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                            placeholder="Enter premium"
+                          />
+                        </div>
+                        <div className="pt-4 border-t border-[#333333]">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-[#C0C0C0]/60">
+                              Spot Price:
+                            </span>
+                            <span className="text-[#C0C0C0]">$1,950.00</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-[#C0C0C0]/60">Premium:</span>
+                            <span className="text-[#C0C0C0]">$97.50</span>
+                          </div>
+                          <div className="flex justify-between font-semibold">
+                            <span className="text-[#C0C0C0]">Total Price:</span>
+                            <span className="text-[#50C878]">$2,047.50</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Reviews List - Right Column */}
+                {/* Right Column - Reviews List */}
                 <div className="col-span-8">
                   <div className="space-y-4">
                     {reviews.map((review) => (
