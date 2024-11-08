@@ -31,6 +31,7 @@ export default function FeedPage() {
     description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Demo user achievements data
   const [userAchievements] = useState({
@@ -327,6 +328,23 @@ export default function FeedPage() {
     }
   };
 
+  // Fetch current user data
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        setCurrentUser(profile);
+      }
+    }
+
+    fetchCurrentUser();
+  }, [session]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid lg:grid-cols-12 gap-8">
@@ -386,7 +404,7 @@ export default function FeedPage() {
             <div className="flex gap-4">
               <div className="relative w-10 h-10 rounded-full overflow-hidden">
                 <Image
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                  src={currentUser?.avatar_url || "/default-avatar.png"}
                   alt="Your avatar"
                   fill
                   className="object-cover"
@@ -400,15 +418,33 @@ export default function FeedPage() {
               </button>
             </div>
             <div className="flex gap-4 mt-4 border-t border-[#C0C0C0]/20 pt-4">
-              <button className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors">
+              <button
+                onClick={() => {
+                  setShowPostModal(true);
+                  setPostType("image");
+                }}
+                className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors"
+              >
                 <PhotoIcon className="h-5 w-5" />
                 <span>Photo</span>
               </button>
-              <button className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors">
+              <button
+                onClick={() => {
+                  setShowPostModal(true);
+                  setPostType("video");
+                }}
+                className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors"
+              >
                 <VideoCameraIcon className="h-5 w-5" />
                 <span>Video</span>
               </button>
-              <button className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors">
+              <button
+                onClick={() => {
+                  setShowPostModal(true);
+                  setPostType("link");
+                }}
+                className="flex items-center gap-2 text-[#C0C0C0]/60 hover:text-[#4169E1] transition-colors"
+              >
                 <LinkIcon className="h-5 w-5" />
                 <span>Link</span>
               </button>
@@ -514,7 +550,10 @@ export default function FeedPage() {
       {/* Create Post Modal */}
       <Dialog
         open={showPostModal}
-        onClose={() => setShowPostModal(false)}
+        onClose={() => {
+          setShowPostModal(false);
+          setPostType("status"); // Reset to default when closing
+        }}
         className="relative z-50"
       >
         <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
