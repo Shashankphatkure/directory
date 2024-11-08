@@ -14,223 +14,171 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function FeedPage() {
-  const { supabase, session } = useSupabase();
+  const { session } = useSupabase();
   const [activeTab, setActiveTab] = useState("following");
   const [showPostModal, setShowPostModal] = useState(false);
   const [feedItems, setFeedItems] = useState([]);
-  const [userAchievements, setUserAchievements] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Demo user achievements data
+  const [userAchievements] = useState({
+    level: 12,
+    metalPoints: 3450,
+    badges: [
+      {
+        id: 1,
+        name: "Silver Trader",
+        icon: "🥈",
+        description: "Completed 50 silver trades",
+        awarded_at: "2024-03-15",
+      },
+      {
+        id: 2,
+        name: "Gold Pioneer",
+        icon: "🏆",
+        description: "First gold purchase",
+        awarded_at: "2024-03-10",
+      },
+      {
+        id: 3,
+        name: "Community Leader",
+        icon: "⭐",
+        description: "100+ helpful comments",
+        awarded_at: "2024-03-05",
+      },
+    ],
+  });
+
   useEffect(() => {
-    if (session?.user) {
-      fetchUserAchievementsAndAwards();
-      fetchFeedItems();
-    }
-  }, [session, activeTab]);
-
-  const fetchUserAchievementsAndAwards = async () => {
-    try {
-      // Fetch user achievements
-      const { data: achievements, error: achievementsError } = await supabase
-        .from("user_achievements")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("awarded_at", { ascending: false });
-
-      if (achievementsError) throw achievementsError;
-
-      // Fetch user awards
-      const { data: awards, error: awardsError } = await supabase
-        .from("user_awards")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("awarded_at", { ascending: false });
-
-      if (awardsError) throw awardsError;
-
-      // Calculate total achievements/awards for level
-      const totalCount = (achievements?.length || 0) + (awards?.length || 0);
-      const level = Math.floor(totalCount / 5) + 1; // Adjust the division number as needed
-
-      // Calculate metal points (you may want to adjust this logic)
-      const metalPoints = achievements.reduce((total, achievement) => {
-        // Add points based on achievement type
-        switch (achievement.achievement_type) {
-          case "TRADE":
-            return total + 100;
-          case "SOCIAL":
-            return total + 50;
-          default:
-            return total + 25;
-        }
-      }, 0);
-
-      setUserAchievements({
-        level: level,
-        metalPoints: metalPoints,
-        badges:
-          awards?.map((award) => ({
-            id: award.id,
-            name: award.name,
-            icon: award.icon,
-            description: award.description || "Achievement unlocked!",
-            awarded_at: award.awarded_at,
-          })) || [],
-        recentMilestones:
-          achievements?.slice(0, 3).map((achievement) => ({
-            id: achievement.id,
-            title: achievement.title,
-            description: achievement.description,
-            icon: achievement.icon,
-            awarded_at: achievement.awarded_at,
-          })) || [],
-      });
-    } catch (error) {
-      console.error("Error fetching user achievements:", error);
-    }
-  };
-
-  const fetchFeedItems = async () => {
-    try {
-      setIsLoading(true);
-      let query = supabase.from("user_achievements").select(`
-          *,
-          profiles:user_id (
-            id,
-            email,
-            username,
-            full_name,
-            avatar_url
-          ),
-          post_likes(count),
-          post_comments(count)
-        `);
-
-      // Apply filters based on active tab
-      if (activeTab === "following") {
-        // Get list of users that the current user follows
-        const { data: followingData } = await supabase
-          .from("follows")
-          .select("following_id")
-          .eq("follower_id", session.user.id);
-
-        const followingIds = followingData?.map((f) => f.following_id) || [];
-
-        // Include current user's ID to see their own posts
-        followingIds.push(session.user.id);
-
-        query = query.in("user_id", followingIds);
-      } else if (activeTab === "trending") {
-        // Order by engagement (likes + comments)
-        query = query
-          .order("post_likes(count)", { ascending: false })
-          .order("post_comments(count)", { ascending: false });
-      } else {
-        // "recent" tab
-        query = query.order("awarded_at", { ascending: false });
-      }
-
-      const { data, error } = await query.limit(10);
-
-      if (error) throw error;
-
-      const formattedFeedItems = await Promise.all(
-        data.map(async (item) => {
-          // Get like status for current user
-          const { data: likeData } = await supabase
-            .from("post_likes")
-            .select("id")
-            .eq("post_id", item.id)
-            .eq("user_id", session.user.id)
-            .single();
-
-          // Get comment count
-          const { count: commentCount } = await supabase
-            .from("post_comments")
-            .select("id", { count: true })
-            .eq("post_id", item.id);
-
-          return {
-            id: item.id,
-            type: "achievement",
-            user: {
-              id: item.profiles.id,
-              name: item.profiles.full_name,
-              username: item.profiles.username,
-              avatar: item.profiles.avatar_url,
-              verified: item.profiles.is_verified || false,
-            },
-            achievement: item.title,
-            description: item.description,
-            timestamp: toRelativeTime(item.awarded_at),
-            likes: item.post_likes?.[0]?.count || 0,
-            comments: commentCount || 0,
-            isLiked: !!likeData,
-            metalPoints: getPointsForAchievement(item.achievement_type),
-          };
-        })
-      );
-
-      setFeedItems(formattedFeedItems);
-    } catch (error) {
-      console.error("Error fetching feed items:", error);
-    } finally {
+    // Simulate loading
+    setTimeout(() => {
+      setFeedItems(getDemoFeedItems());
       setIsLoading(false);
+    }, 1000);
+  }, [activeTab]);
+
+  const getDemoFeedItems = () => {
+    const demoItems = [
+      {
+        id: 1,
+        type: "achievement",
+        user: {
+          id: "user1",
+          name: "Sarah Johnson",
+          username: "silverguru",
+          avatar:
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+          verified: true,
+        },
+        achievement: "Gold Trading Master",
+        description:
+          "Just completed my 100th gold trade! 🎉 The market's been volatile but holding strong. #PreciousMetals #Trading",
+        timestamp: "2 hours ago",
+        likes: 142,
+        comments: 23,
+        isLiked: false,
+        metalPoints: 100,
+      },
+      {
+        id: 2,
+        type: "achievement",
+        user: {
+          id: "user2",
+          name: "Michael Chen",
+          username: "metaltrader",
+          avatar:
+            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
+          verified: true,
+        },
+        achievement: "Silver Stack Milestone",
+        description:
+          "Hit 1000 oz of silver in my portfolio! 🥈 Remember: slow and steady wins the race. #SilverStacking",
+        timestamp: "5 hours ago",
+        likes: 89,
+        comments: 12,
+        isLiked: true,
+        metalPoints: 75,
+      },
+      {
+        id: 3,
+        type: "achievement",
+        user: {
+          id: "user3",
+          name: "Emma Davis",
+          username: "preciousmetals",
+          avatar:
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+          verified: false,
+        },
+        achievement: "First Platinum Purchase",
+        description:
+          "Finally took the plunge into platinum! 💫 The industrial demand looks promising. What do you all think? #Platinum #Investment",
+        timestamp: "1 day ago",
+        likes: 234,
+        comments: 45,
+        isLiked: false,
+        metalPoints: 150,
+      },
+      {
+        id: 4,
+        type: "achievement",
+        user: {
+          id: "user4",
+          name: "Alex Thompson",
+          username: "goldstacker",
+          avatar:
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+          verified: true,
+        },
+        achievement: "Market Analysis Expert",
+        description:
+          "Just published my 50th market analysis report! 📊 Check out my latest thoughts on the gold/silver ratio. #Analysis #PreciousMetals",
+        timestamp: "2 days ago",
+        likes: 167,
+        comments: 28,
+        isLiked: true,
+        metalPoints: 90,
+      },
+    ];
+
+    // Filter based on activeTab
+    if (activeTab === "trending") {
+      return [...demoItems].sort(
+        (a, b) => b.likes + b.comments - (a.likes + a.comments)
+      );
+    } else if (activeTab === "recent") {
+      return demoItems.reverse();
     }
+    return demoItems;
   };
 
   const handleLike = async (itemId) => {
-    try {
-      const { data: existingLike } = await supabase
-        .from("post_likes")
-        .select("id")
-        .eq("post_id", itemId)
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (existingLike) {
-        // Unlike
-        await supabase.from("post_likes").delete().eq("id", existingLike.id);
-      } else {
-        // Like
-        await supabase.from("post_likes").insert({
-          post_id: itemId,
-          user_id: session.user.id,
-        });
-      }
-
-      // Refresh feed items
-      fetchFeedItems();
-    } catch (error) {
-      console.error("Error handling like:", error);
-    }
+    setFeedItems(
+      feedItems.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            isLiked: !item.isLiked,
+            likes: item.isLiked ? item.likes - 1 : item.likes + 1,
+          };
+        }
+        return item;
+      })
+    );
   };
 
   const handleComment = async (itemId, content) => {
-    try {
-      await supabase.from("post_comments").insert({
-        post_id: itemId,
-        user_id: session.user.id,
-        content,
-      });
-
-      // Refresh feed items
-      fetchFeedItems();
-    } catch (error) {
-      console.error("Error posting comment:", error);
-    }
-  };
-
-  // Helper function to determine points based on achievement type
-  const getPointsForAchievement = (type) => {
-    const pointsMap = {
-      TRADE: 100,
-      SOCIAL: 50,
-      BADGE: 75,
-      MILESTONE: 150,
-      DEFAULT: 25,
-    };
-    return pointsMap[type] || pointsMap.DEFAULT;
+    setFeedItems(
+      feedItems.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            comments: item.comments + 1,
+          };
+        }
+        return item;
+      })
+    );
   };
 
   // Function to create a new post
