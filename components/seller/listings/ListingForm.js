@@ -1,19 +1,18 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 export default function ListingForm() {
-  const [images, setImages] = useState([
-    // Pre-populated mock images for demonstration
-    {
-      url: "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-      file: null,
-    },
-    {
-      url: "https://images.unsplash.com/photo-1624365168968-f283d506c6b6",
-      file: null,
-    },
-  ]);
+  const [images, setImages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const { data: session } = useSession();
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -26,6 +25,7 @@ export default function ListingForm() {
     enableOffers: false,
     autoAcceptPrice: "",
     autoDenyPrice: "",
+    year: new Date().getFullYear().toString(), // Add year field
   });
 
   const handleImageUpload = (e) => {
@@ -44,11 +44,96 @@ export default function ListingForm() {
     setImages(newImages);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", { ...formData, images });
+  const uploadImagesToStorage = async () => {
+    const imageUrls = [];
+
+    for (const image of images) {
+      const fileExt = image.file.name.split(".").pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `listings/${session.user.id}/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from("listings")
+        .upload(filePath, image.file);
+
+      if (uploadError) throw uploadError;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("listings").getPublicUrl(filePath);
+
+      imageUrls.push(publicUrl);
+    }
+
+    return imageUrls;
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    // Debug logs
+    console.log("Session user:", session?.user);
+    console.log("User ID:", session?.user?.id);
+
+    try {
+      if (!session?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      // Upload images first
+      const imageUrls = await uploadImagesToStorage();
+
+      // Prepare listing data
+      const listingData = {
+        user_id: session.user.id,
+        title: formData.title,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        metal_type: formData.metalType.toLowerCase(),
+        condition: formData.condition.toLowerCase(),
+        weight: parseFloat(formData.weight),
+        weight_unit: "oz",
+        year: formData.year,
+        images: imageUrls,
+        status: "active",
+      };
+
+      console.log("Attempting to insert listing:", listingData);
+
+      // Insert listing into database
+      const { error: insertError, data: listing } = await supabase
+        .from("listings")
+        .insert(listingData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
+
+      console.log("Listing created successfully:", listing);
+
+      // Redirect to the new listing page
+      router.push(`/listings/${listing.id}`);
+    } catch (err) {
+      console.error("Error creating listing:", err);
+      setError(err.message || "Failed to create listing");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Show error message if exists
+  if (error) {
+    return (
+      <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg mb-4">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -341,15 +426,17 @@ export default function ListingForm() {
       <div className="flex justify-end space-x-4">
         <button
           type="button"
-          className="px-6 py-2 border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] hover:bg-[#333333] transition-all duration-300"
+          disabled={isSubmitting}
+          className="px-6 py-2 border border-[#C0C0C0]/20 rounded-lg text-[#C0C0C0] hover:bg-[#333333] transition-all duration-300 disabled:opacity-50"
         >
           Save as Draft
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-[#FFD700] text-[#1A1A1A] rounded-lg hover:bg-[#F5C400] transition-all duration-300 font-semibold"
+          disabled={isSubmitting}
+          className="px-6 py-2 bg-[#FFD700] text-[#1A1A1A] rounded-lg hover:bg-[#F5C400] transition-all duration-300 font-semibold disabled:opacity-50"
         >
-          Publish Listing
+          {isSubmitting ? "Publishing..." : "Publish Listing"}
         </button>
       </div>
     </form>
