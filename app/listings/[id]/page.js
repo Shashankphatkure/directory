@@ -363,7 +363,8 @@ export default function ListingPage({ params: { id } }) {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-5 gap-8">
+        {/* Main Product Grid */}
+        <div className="grid lg:grid-cols-5 gap-8 mb-16">
           {/* Left Column - Image Gallery */}
           <div className="lg:col-span-3 space-y-4">
             {/* Main Image */}
@@ -400,241 +401,6 @@ export default function ListingPage({ params: { id } }) {
                 ))}
               </div>
             )}
-
-            {/* Reviews Section */}
-            <div className="mt-16 col-span-full">
-              <div className="border-b border-[#333333] mb-6">
-                <h3 className="text-xl font-semibold text-[#C0C0C0] pb-4">
-                  Reviews ({reviewStats.total})
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-12 gap-6">
-                {/* Left Column - Reviews Summary & Price Calculator */}
-                <div className="col-span-4">
-                  <div className="space-y-6">
-                    {/* Reviews Summary Card */}
-                    <div className="card p-4">
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-[#C0C0C0] mb-2">
-                          {reviewStats.average.toFixed(1)}
-                        </div>
-                        <div className="flex items-center justify-center mb-2">
-                          {renderStars(Math.round(reviewStats.average))}
-                        </div>
-                        <div className="text-sm text-[#C0C0C0]/60 mb-4">
-                          Based on {reviewStats.total} reviews
-                        </div>
-                      </div>
-
-                      {/* Rating Distribution */}
-                      <div className="space-y-2">
-                        {Object.entries(reviewStats.distribution)
-                          .reverse()
-                          .map(([rating, count]) => (
-                            <div
-                              key={rating}
-                              className="flex items-center gap-2"
-                            >
-                              <div className="w-8 text-xs text-[#C0C0C0]/60">
-                                {rating}★
-                              </div>
-                              <div className="flex-1 h-1.5 bg-[#333333] rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-[#4169E1]"
-                                  style={{
-                                    width: `${
-                                      (count / reviewStats.total) * 100
-                                    }%`,
-                                  }}
-                                />
-                              </div>
-                              <div className="w-8 text-right text-xs text-[#C0C0C0]/60">
-                                {count}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-
-                      {/* Review Button */}
-                      <button className="w-full mt-4 px-4 py-2 bg-[#4169E1] text-white rounded-lg hover:bg-[#4169E1]/90 transition-colors">
-                        Write a Review
-                      </button>
-                    </div>
-
-                    {/* Price Calculator Card */}
-                    <div className="card p-4">
-                      <h3 className="text-[#FFD700] font-semibold mb-4">
-                        Price Calculator
-                      </h3>
-
-                      {/* Metal Price Chart */}
-                      <div className="h-48 mb-4">
-                        <Line
-                          data={{
-                            labels: ["1M", "3M", "6M", "1Y", "2Y", "5Y"],
-                            datasets: [
-                              {
-                                label: "Metal Price",
-                                data: [1800, 1850, 1900, 1950, 2000, 2050],
-                                borderColor: "#FFD700",
-                                tension: 0.4,
-                              },
-                            ],
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              legend: {
-                                display: false,
-                              },
-                            },
-                            scales: {
-                              y: {
-                                grid: {
-                                  color: "#333333",
-                                },
-                                ticks: {
-                                  callback: (value) => `$${value}`,
-                                  color: "#C0C0C0",
-                                },
-                              },
-                              x: {
-                                grid: {
-                                  color: "#333333",
-                                },
-                                ticks: {
-                                  color: "#C0C0C0",
-                                },
-                              },
-                            },
-                          }}
-                        />
-                      </div>
-
-                      {/* Calculator Inputs */}
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm text-[#C0C0C0]/60 mb-1">
-                            Weight (oz)
-                          </label>
-                          <input
-                            type="number"
-                            className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
-                            placeholder="Enter weight"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-[#C0C0C0]/60 mb-1">
-                            Premium (%)
-                          </label>
-                          <input
-                            type="number"
-                            className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
-                            placeholder="Enter premium"
-                          />
-                        </div>
-                        <div className="pt-4 border-t border-[#333333]">
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-[#C0C0C0]/60">
-                              Spot Price:
-                            </span>
-                            <span className="text-[#C0C0C0]">$1,950.00</span>
-                          </div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-[#C0C0C0]/60">Premium:</span>
-                            <span className="text-[#C0C0C0]">$97.50</span>
-                          </div>
-                          <div className="flex justify-between font-semibold">
-                            <span className="text-[#C0C0C0]">Total Price:</span>
-                            <span className="text-[#50C878]">$2,047.50</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column - Reviews List */}
-                <div className="col-span-8">
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="card p-4">
-                        {/* Review Header */}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                              <Image
-                                src={review.user.avatar}
-                                alt={review.user.name}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1">
-                                <span className="font-semibold text-sm text-[#C0C0C0]">
-                                  {review.user.name}
-                                </span>
-                                {review.user.verified && (
-                                  <ShieldCheckIcon className="h-4 w-4 text-[#50C878]" />
-                                )}
-                              </div>
-                              <div className="text-xs text-[#C0C0C0]/60">
-                                {new Date(review.date).toLocaleDateString()}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex">
-                            {renderStars(review.rating)}
-                          </div>
-                        </div>
-
-                        {/* Review Content */}
-                        <p className="text-sm text-[#C0C0C0]/80 mb-3">
-                          {review.content}
-                        </p>
-
-                        {/* Review Images */}
-                        {review.images && review.images.length > 0 && (
-                          <div className="grid grid-cols-4 gap-2 mb-3">
-                            {review.images.map((image, index) => (
-                              <div
-                                key={index}
-                                className="relative aspect-square rounded-lg overflow-hidden"
-                              >
-                                <Image
-                                  src={image}
-                                  alt={`Review image ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Review Actions */}
-                        <div className="flex items-center gap-4 text-xs text-[#C0C0C0]/60">
-                          <button className="hover:text-[#4169E1] transition-colors">
-                            Helpful
-                          </button>
-                          <button className="hover:text-[#4169E1] transition-colors">
-                            Report
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Load More Button */}
-                    <button className="w-full py-2 border border-[#333333] rounded-lg text-[#C0C0C0] hover:bg-[#333333] transition-colors">
-                      Load More Reviews
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Right Column - Product Info & Actions */}
@@ -737,6 +503,228 @@ export default function ListingPage({ params: { id } }) {
 
             {/* Additional Information Cards */}
             {/* ... (shipping, payment, buyer protection, and price history cards remain the same) */}
+          </div>
+        </div>
+
+        {/* Full Width Reviews Section */}
+        <div className="border-t border-[#333333] pt-16">
+          <h3 className="text-xl font-semibold text-[#C0C0C0] mb-8">
+            Reviews ({reviewStats.total})
+          </h3>
+
+          <div className="grid grid-cols-12 gap-8">
+            {/* Reviews Summary & Calculator */}
+            <div className="col-span-3">
+              <div className="sticky top-24 space-y-8">
+                {/* Reviews Summary Card */}
+                <div className="card p-6">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-[#C0C0C0] mb-2">
+                      {reviewStats.average.toFixed(1)}
+                    </div>
+                    <div className="flex items-center justify-center mb-2">
+                      {renderStars(Math.round(reviewStats.average))}
+                    </div>
+                    <div className="text-sm text-[#C0C0C0]/60 mb-4">
+                      Based on {reviewStats.total} reviews
+                    </div>
+                  </div>
+
+                  {/* Rating Distribution */}
+                  <div className="space-y-2">
+                    {Object.entries(reviewStats.distribution)
+                      .reverse()
+                      .map(([rating, count]) => (
+                        <div key={rating} className="flex items-center gap-2">
+                          <div className="w-8 text-xs text-[#C0C0C0]/60">
+                            {rating}★
+                          </div>
+                          <div className="flex-1 h-1.5 bg-[#333333] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#4169E1]"
+                              style={{
+                                width: `${(count / reviewStats.total) * 100}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="w-8 text-right text-xs text-[#C0C0C0]/60">
+                            {count}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Review Button */}
+                  <button className="w-full mt-4 px-4 py-2 bg-[#4169E1] text-white rounded-lg hover:bg-[#4169E1]/90 transition-colors">
+                    Write a Review
+                  </button>
+                </div>
+
+                {/* Price Calculator Card */}
+                <div className="card p-6">
+                  <h3 className="text-[#FFD700] font-semibold mb-4">
+                    Price Calculator
+                  </h3>
+
+                  {/* Metal Price Chart */}
+                  <div className="h-48 mb-4">
+                    <Line
+                      data={{
+                        labels: ["1M", "3M", "6M", "1Y", "2Y", "5Y"],
+                        datasets: [
+                          {
+                            label: "Metal Price",
+                            data: [1800, 1850, 1900, 1950, 2000, 2050],
+                            borderColor: "#FFD700",
+                            tension: 0.4,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            display: false,
+                          },
+                        },
+                        scales: {
+                          y: {
+                            grid: {
+                              color: "#333333",
+                            },
+                            ticks: {
+                              callback: (value) => `$${value}`,
+                              color: "#C0C0C0",
+                            },
+                          },
+                          x: {
+                            grid: {
+                              color: "#333333",
+                            },
+                            ticks: {
+                              color: "#C0C0C0",
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+
+                  {/* Calculator Inputs */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                        Weight (oz)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                        placeholder="Enter weight"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-[#C0C0C0]/60 mb-1">
+                        Premium (%)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full bg-[#333333] rounded-lg px-4 py-2 text-[#C0C0C0] focus:outline-none focus:ring-2 focus:ring-[#4169E1]"
+                        placeholder="Enter premium"
+                      />
+                    </div>
+                    <div className="pt-4 border-t border-[#333333]">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-[#C0C0C0]/60">Spot Price:</span>
+                        <span className="text-[#C0C0C0]">$1,950.00</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-[#C0C0C0]/60">Premium:</span>
+                        <span className="text-[#C0C0C0]">$97.50</span>
+                      </div>
+                      <div className="flex justify-between font-semibold">
+                        <span className="text-[#C0C0C0]">Total Price:</span>
+                        <span className="text-[#50C878]">$2,047.50</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Reviews List */}
+            <div className="col-span-9">
+              <div className="space-y-6">
+                {reviews.map((review) => (
+                  <div key={review.id} className="card p-6">
+                    {/* Review Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                          <Image
+                            src={review.user.avatar}
+                            alt={review.user.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[#C0C0C0]">
+                              {review.user.name}
+                            </span>
+                            {review.user.verified && (
+                              <ShieldCheckIcon className="h-4 w-4 text-[#50C878]" />
+                            )}
+                          </div>
+                          <div className="text-sm text-[#C0C0C0]/60">
+                            {new Date(review.date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex">{renderStars(review.rating)}</div>
+                    </div>
+
+                    {/* Review Content */}
+                    <p className="text-[#C0C0C0]/80 mb-4">{review.content}</p>
+
+                    {/* Review Images */}
+                    {review.images && review.images.length > 0 && (
+                      <div className="grid grid-cols-4 gap-4 mb-4">
+                        {review.images.map((image, index) => (
+                          <div
+                            key={index}
+                            className="relative aspect-square rounded-lg overflow-hidden"
+                          >
+                            <Image
+                              src={image}
+                              alt={`Review image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Review Actions */}
+                    <div className="flex items-center gap-4 text-sm text-[#C0C0C0]/60">
+                      <button className="hover:text-[#4169E1] transition-colors">
+                        Helpful
+                      </button>
+                      <button className="hover:text-[#4169E1] transition-colors">
+                        Report
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Load More Button */}
+                <button className="w-full py-3 border border-[#333333] rounded-lg text-[#C0C0C0] hover:bg-[#333333] transition-colors">
+                  Load More Reviews
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
