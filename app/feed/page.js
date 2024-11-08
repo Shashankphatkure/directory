@@ -14,9 +14,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { Dialog } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { v4 as uuidv4 } from "uuid";
 
 export default function FeedPage() {
-  const { session } = useSupabase();
+  const { supabase, session } = useSupabase();
   const [activeTab, setActiveTab] = useState("following");
   const [showPostModal, setShowPostModal] = useState(false);
   const [feedItems, setFeedItems] = useState([]);
@@ -60,166 +61,234 @@ export default function FeedPage() {
     ],
   });
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setFeedItems(getDemoFeedItems());
-      setIsLoading(false);
-    }, 1000);
-  }, [activeTab]);
+  // Function to upload media to Supabase storage
+  const uploadMedia = async (file) => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${session.user.id}/${fileName}`;
 
-  const getDemoFeedItems = () => {
-    const demoItems = [
-      {
-        id: 1,
-        type: "image",
+      const { data, error } = await supabase.storage
+        .from("post-media")
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("post-media").getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  };
+
+  // Function to create a new post
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      let mediaUrl = null;
+      let thumbnailUrl = null;
+
+      // Handle media upload if present
+      if (postMedia) {
+        try {
+          mediaUrl = await uploadMedia(postMedia);
+
+          // For videos, use the first frame as thumbnail
+          if (postType === "video") {
+            thumbnailUrl = mediaUrl;
+          }
+        } catch (error) {
+          console.error("Media upload error:", error);
+          alert("Error uploading media. Please try again.");
+          return;
+        }
+      }
+
+      // Create post object
+      const postData = {
+        user_id: session.user.id,
+        content: postContent,
+        type: postType,
+        media_url: mediaUrl,
+        thumbnail_url: thumbnailUrl,
+      };
+
+      // Add link data if it's a link post
+      if (postType === "link") {
+        postData.link_url = postLink.url;
+        postData.link_title = postLink.title;
+        postData.link_description = postLink.description;
+        postData.link_image = postLink.image;
+      }
+
+      // Insert into database
+      const { data: newPost, error: insertError } = await supabase
+        .from("posts")
+        .insert([postData])
+        .select(
+          `
+          *,
+          profiles!posts_user_id_fkey (
+            id,
+            username,
+            full_name,
+            avatar_url,
+            is_verified
+          )
+        `
+        )
+        .single();
+
+      if (insertError) {
+        console.error("Database insert error:", insertError);
+        throw new Error(insertError.message);
+      }
+
+      if (!newPost) {
+        throw new Error("No post data returned");
+      }
+
+      // Format the new post for the feed
+      const formattedPost = {
+        id: newPost.id,
+        type: newPost.type,
         user: {
-          id: "user1",
-          name: "Sarah Johnson",
-          username: "silverguru",
-          avatar:
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-          verified: true,
+          id: newPost.profiles.id,
+          name: newPost.profiles.full_name,
+          username: newPost.profiles.username,
+          avatar: newPost.profiles.avatar_url,
+          verified: newPost.profiles.is_verified,
         },
-        content:
-          "Just received my latest silver delivery! Check out these beautiful American Eagles 🦅",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1618403088890-3d9ff6f4c8b1",
-        timestamp: "2 hours ago",
-        likes: 142,
-        comments: 23,
+        content: newPost.content,
+        mediaUrl: newPost.media_url,
+        thumbnail: newPost.thumbnail_url,
+        link:
+          newPost.type === "link"
+            ? {
+                url: newPost.link_url,
+                title: newPost.link_title,
+                description: newPost.link_description,
+                image: newPost.link_image,
+              }
+            : null,
+        timestamp: "Just now",
+        likes: 0,
+        comments: 0,
         isLiked: false,
-        metalPoints: 100,
-      },
-      {
-        id: 2,
-        type: "video",
+      };
+
+      // Add to feed items
+      setFeedItems([formattedPost, ...feedItems]);
+
+      // Reset form
+      setPostContent("");
+      setPostMedia(null);
+      setPostLink({ url: "", title: "", description: "" });
+      setShowPostModal(false);
+    } catch (error) {
+      console.error("Error creating post:", error);
+      alert(`Error creating post: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Function to fetch posts from database
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      let query = supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles!posts_user_id_fkey (
+            id,
+            username,
+            full_name,
+            avatar_url,
+            is_verified
+          ),
+          post_likes(count),
+          post_comments(count)
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      // Apply filters based on active tab
+      if (activeTab === "following") {
+        // First get the following IDs
+        const { data: followingData, error: followingError } = await supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", session.user.id);
+
+        if (followingError) throw followingError;
+
+        // Get the array of following IDs and include the user's own ID
+        const followingIds = [
+          ...(followingData?.map((f) => f.following_id) || []),
+          session.user.id,
+        ];
+
+        // Filter posts by these user IDs
+        query = query.in("user_id", followingIds);
+      }
+
+      const { data, error } = await query.limit(20);
+
+      if (error) throw error;
+
+      // Format posts for the feed
+      const formattedPosts = data.map((post) => ({
+        id: post.id,
+        type: post.type,
         user: {
-          id: "user2",
-          name: "Michael Chen",
-          username: "metaltrader",
-          avatar:
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
-          verified: true,
-        },
-        content:
-          "New video! Breaking down this week's gold market analysis and price predictions 📈",
-        mediaUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        thumbnail:
-          "https://images.unsplash.com/photo-1610375461246-83df859d849d",
-        timestamp: "5 hours ago",
-        likes: 89,
-        comments: 12,
-        isLiked: true,
-        metalPoints: 75,
-      },
-      {
-        id: 3,
-        type: "link",
-        user: {
-          id: "user3",
-          name: "Emma Davis",
-          username: "preciousmetals",
-          avatar:
-            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+          id: post.profiles.id,
+          name: post.profiles.full_name,
+          username: post.profiles.username,
+          avatar: post.profiles.avatar_url,
           verified: false,
         },
-        content:
-          "Great article on the future of platinum in the green energy sector. Must read! 💫",
-        link: {
-          url: "https://example.com/platinum-analysis",
-          title: "Platinum's Role in Green Energy Revolution",
-          description:
-            "Analysis of platinum demand in hydrogen fuel cells and renewable energy",
-          image: "https://images.unsplash.com/photo-1578256415817-4d3d49418e4e",
-        },
-        timestamp: "1 day ago",
-        likes: 234,
-        comments: 45,
-        isLiked: false,
-        metalPoints: 150,
-      },
-      {
-        id: 4,
-        type: "status",
-        user: {
-          id: "user4",
-          name: "Alex Thompson",
-          username: "goldstacker",
-          avatar:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-          verified: true,
-        },
-        content:
-          "Just hit my yearly gold accumulation goal! 🎯 Remember folks: it's not about timing the market, it's about time IN the market. #Gold #Investment",
-        timestamp: "2 days ago",
-        likes: 167,
-        comments: 28,
-        isLiked: true,
-        metalPoints: 90,
-      },
-      {
-        id: 5,
-        type: "image",
-        user: {
-          id: "user5",
-          name: "Jessica Williams",
-          username: "silverstack",
-          avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
-          verified: true,
-        },
-        content:
-          "My silver stack organization system! Swipe for before/after 📦✨",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1618403088890-3d9ff6f4c8b1",
-        additionalImages: [
-          "https://images.unsplash.com/photo-1589656966895-2f33e7653819",
-          "https://images.unsplash.com/photo-1589656966895-2f33e7653819",
-        ],
-        timestamp: "3 days ago",
-        likes: 321,
-        comments: 56,
-        isLiked: false,
-        metalPoints: 85,
-      },
-      {
-        id: 6,
-        type: "link",
-        user: {
-          id: "user6",
-          name: "Robert Chen",
-          username: "metalmarket",
-          avatar:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-          verified: true,
-        },
-        content:
-          "My latest market research report is out! Deep dive into silver industrial demand 🔍",
-        link: {
-          url: "https://example.com/silver-research",
-          title: "Silver Industrial Demand 2024 Outlook",
-          description:
-            "Comprehensive analysis of silver's industrial applications and market trends",
-          image: "https://images.unsplash.com/photo-1578255321543-cd4a6ca5271c",
-        },
-        timestamp: "4 days ago",
-        likes: 198,
-        comments: 34,
-        isLiked: true,
-        metalPoints: 120,
-      },
-    ];
+        content: post.content,
+        mediaUrl: post.media_url,
+        thumbnail: post.thumbnail_url,
+        link:
+          post.type === "link"
+            ? {
+                url: post.link_url,
+                title: post.link_title,
+                description: post.link_description,
+                image: post.link_image,
+              }
+            : null,
+        timestamp: new Date(post.created_at).toLocaleDateString(),
+        likes: post.post_likes?.[0]?.count || 0,
+        comments: post.post_comments?.[0]?.count || 0,
+        isLiked: false, // You'll need to check this against current user
+      }));
 
-    // Filter based on activeTab
-    if (activeTab === "trending") {
-      return [...demoItems].sort(
-        (a, b) => b.likes + b.comments - (a.likes + a.comments)
-      );
-    } else if (activeTab === "recent") {
-      return demoItems.reverse();
+      setFeedItems(formattedPosts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
     }
-    return demoItems;
   };
+
+  // Fetch posts when tab changes
+  useEffect(() => {
+    if (session?.user) {
+      fetchPosts();
+    }
+  }, [session, activeTab]);
 
   const handleLike = async (itemId) => {
     setFeedItems(
@@ -248,78 +317,6 @@ export default function FeedPage() {
         return item;
       })
     );
-  };
-
-  // Function to create a new post
-  const createPost = async (postData) => {
-    try {
-      const { data, error } = await supabase
-        .from("feed_posts")
-        .insert([
-          {
-            user_id: session.user.id,
-            ...postData,
-          },
-        ])
-        .select();
-
-      if (error) throw error;
-
-      // Refresh feed items
-      fetchFeedItems();
-    } catch (error) {
-      console.error("Error creating post:", error);
-    }
-  };
-
-  // Function to handle post creation
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Create new post object
-      const newPost = {
-        id: feedItems.length + 1,
-        type: postType,
-        user: {
-          id: "current_user",
-          name: "Current User",
-          username: "currentuser",
-          avatar: currentUser?.avatar || "/default-avatar.png",
-          verified: false,
-        },
-        content: postContent,
-        timestamp: "Just now",
-        likes: 0,
-        comments: 0,
-        isLiked: false,
-        metalPoints: 0,
-      };
-
-      // Add type-specific data
-      if (postType === "image" && postMedia) {
-        newPost.mediaUrl = URL.createObjectURL(postMedia);
-      } else if (postType === "video" && postMedia) {
-        newPost.mediaUrl = URL.createObjectURL(postMedia);
-        newPost.thumbnail = "/video-thumbnail.jpg"; // You'd want to generate this
-      } else if (postType === "link") {
-        newPost.link = postLink;
-      }
-
-      // Add to feed items
-      setFeedItems([newPost, ...feedItems]);
-
-      // Reset form
-      setPostContent("");
-      setPostMedia(null);
-      setPostLink({ url: "", title: "", description: "" });
-      setShowPostModal(false);
-    } catch (error) {
-      console.error("Error creating post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   // Function to handle file selection
