@@ -15,7 +15,7 @@ import {
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import { fetchSingleListing } from "@/utils/supabase/queries";
 
-export default function ListingPage({ params }) {
+export default function ListingPage({ params: { id } }) {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -26,12 +26,12 @@ export default function ListingPage({ params }) {
 
   useEffect(() => {
     loadListing();
-  }, [params.id]);
+  }, [id]);
 
   const loadListing = async () => {
     try {
       setLoading(true);
-      const data = await fetchSingleListing(params.id);
+      const data = await fetchSingleListing(id);
       setListing(data);
     } catch (err) {
       console.error("Error loading listing:", err);
